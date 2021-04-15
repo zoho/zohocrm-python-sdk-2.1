@@ -10,9 +10,8 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='zcrmsdk-2.1',
-    version='4.0.0-beta',
-
+    name='zcrmsdk',
+    version='3.0.0',
     description='Zoho CRM SDK Beta SDK for ZOHO CRM 2.1 APIs',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -20,8 +19,6 @@ setup(
     author='Zoho CRM API Team',
     author_email='support@zohocrm.com',
     scripts=[],
-
-
     classifiers=[
         'Development Status :: 5 - Production/Stable',
 
