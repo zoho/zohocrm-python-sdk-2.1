@@ -58,7 +58,7 @@ You can include the SDK to your project using:
     - Run the command below:
 
     ```sh
-    pip install zcrmsdk==3.x.x
+    pip install zcrmsdk==4.x.xb2
     ```
 - The Python SDK will be installed in your client application.
 
@@ -107,8 +107,10 @@ In case the user prefers to use default DataBase persistence, **MySQL** can be u
   - id int(11)
 
   - user_mail varchar(255)
-
+  
   - client_id varchar(255)
+  
+  - client_secret varchar(255)
 
   - refresh_token varchar(255)
 
@@ -117,12 +119,24 @@ In case the user prefers to use default DataBase persistence, **MySQL** can be u
   - grant_token varchar(255)
 
   - expiry_time varchar(20)
+  
+  - redirect_url varchar(255)
 
 #### MySQL Query
 
 ```sql
-create table oauthtoken(id int(11) not null auto_increment, user_mail varchar(255) not null, client_id varchar(255), refresh_token varchar(255), access_token varchar(255), grant_token varchar(255), expiry_time varchar(20), primary key (id));
-
+CREATE TABLE  oauthtoken (
+  id varchar(255) NOT NULL,
+  user_mail varchar(255) NOT NULL,
+  client_id varchar(255),
+  client_secret varchar(255),
+  refresh_token varchar(255),
+  access_token varchar(255),
+  grant_token varchar(255),
+  expiry_time varchar(20),
+  redirect_url varchar(255),
+  primary key (id)
+) 
 alter table oauthtoken auto_increment = 1;
 ```
 
@@ -149,10 +163,13 @@ store = DBStore(host='host_name', database_name='database_name', user_name='user
 In case of File Persistence, the user can persist tokens in the local drive, by providing the absolute file path to the FileStore object.
 
 - The File contains
-
+    - id 
+    
     - user_mail
 
     - client_id
+    
+    - client_secret
 
     - refresh_token
 
@@ -161,6 +178,8 @@ In case of File Persistence, the user can persist tokens in the local drive, by 
     - grant_token
 
     - expiry_time
+    
+    - redirect_url
 
 #### Create FileStore object
 
@@ -215,7 +234,7 @@ class CustomStore(TokenStore):
 
         # Add code to delete the token
     
-    def get_tokens():
+    def get_tokens(self):
 
         """
         Returns:
@@ -224,10 +243,22 @@ class CustomStore(TokenStore):
 
         # Add code to get all the stored tokens
     
-    def delete_tokens():
+    def delete_tokens(self):
 
         # Add code to delete all the stored tokens
+    
+    def get_token_by_id(id, token):
+        
+        """
+        The method to get id token details.
 
+        Parameters:
+            id (String) : A String id.
+            token (Token) : A Token class instance.
+
+        Returns:
+            Token : A Token class instance representing the id token details.
+        """
 ```
 
 ## Configuration

@@ -37,6 +37,14 @@ class Constants(object):
 
     INPUT_ERROR = "INPUT_ERROR"
 
+    LOGGER_LEVELS = {
+        "CRITICAL": "CRITICAL",
+        "ERROR": "ERROR",
+        "WARNING": "WARNING",
+        "INFO": "INFO",
+        "DEBUG": "DEBUG",
+        "NOTSET": "NOTSET"
+    }
     KEY_VS_INVENTORY_MODULE = {
         "Quoted_Items": "quotes",
 
@@ -176,7 +184,7 @@ class Constants(object):
 
     ZOHO_SDK = "X-ZOHO-SDK"
 
-    SDK_VERSION = "4.0.0-beta"
+    SDK_VERSION = "4.0.0-beta-2"
 
     CONTENT_DISPOSITION = "Content-Disposition"
 
@@ -667,3 +675,15 @@ class Constants(object):
     CLIENT_ID_NULL_ERROR_MESSAGE = "ClientID MUST NOT be null"
 
     CLIENT_SECRET_NULL_ERROR_MESSAGE = "ClientSecret MUST NOT be null"
+
+    REQUEST_PROXY_ERROR_MESSAGE = "request_proxy must be instance of Request Proxy"
+
+    USER_SIGNATURE_ERROR_MESSAGE = "UserSignature MUST NOT be null."
+
+    ENVIRONMENT_ERROR_MESSAGE = "Environment MUST NOT be null."
+
+    SDK_CONFIG_ERROR_MESSAGE = "sdkConfig MUST NOT be null."
+
+    TOKEN_ERROR_MESSAGETOKEN_ERROR_MESSAGE = "Token MUST NOT be null."
+
+    STORE_ERROR_MESSAGE = "Store MUST NOT be null."

@@ -706,7 +706,7 @@ class Utility(object):
         if len(Utility.apitype_vs_datatype) > 0:
             return
 
-        field_api_names_string = ["textarea", "text", "website", "email", "phone", "mediumtext", "multiselectlookup",
+        field_api_names_string = ["textarea", "text", "website", "email", "phone", "mediumtext",
                                   "profileimage", "autonumber"]
 
         field_api_names_integer = ['integer']
