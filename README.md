@@ -58,7 +58,7 @@ You can include the SDK to your project using:
     - Run the command below:
 
     ```sh
-    pip install zcrmsdk==4.x.xb2
+    pip install zcrmsdk==4.x.xb3
     ```
 - The Python SDK will be installed in your client application.
 
@@ -581,6 +581,7 @@ The **Python SDK** (from version 3.x.x) supports both single-user and multi-user
 ### Multithreading in a Multi-user App
 
 Multi-threading for multi-users is achieved using Initializer's static **switch_user()** method.
+switch_user() takes the value initialized previously for user, enviroment, token and sdk_config incase None is passed (or default value is passed). In case of request_proxy, if intended, the value has to be passed again else None(default value) will be taken.
 
 ```python
 # without proxy

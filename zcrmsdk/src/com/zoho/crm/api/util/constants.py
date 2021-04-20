@@ -184,7 +184,7 @@ class Constants(object):
 
     ZOHO_SDK = "X-ZOHO-SDK"
 
-    SDK_VERSION = "4.0.0-beta-2"
+    SDK_VERSION = "4.0.0-beta-3"
 
     CONTENT_DISPOSITION = "Content-Disposition"
 
@@ -678,12 +678,12 @@ class Constants(object):
 
     REQUEST_PROXY_ERROR_MESSAGE = "request_proxy must be instance of Request Proxy"
 
-    USER_SIGNATURE_ERROR_MESSAGE = "UserSignature MUST NOT be null."
+    USER_SIGNATURE_ERROR_MESSAGE = "user must be instance of userSignature."
 
-    ENVIRONMENT_ERROR_MESSAGE = "Environment MUST NOT be null."
+    ENVIRONMENT_ERROR_MESSAGE = "environment must be instance of Environment."
 
-    SDK_CONFIG_ERROR_MESSAGE = "sdkConfig MUST NOT be null."
+    SDK_CONFIG_ERROR_MESSAGE = "sdk_config must be instance of sdkConfig."
 
-    TOKEN_ERROR_MESSAGETOKEN_ERROR_MESSAGE = "Token MUST NOT be null."
+    TOKEN_ERROR_MESSAGE = "token must be instance of Token."
 
-    STORE_ERROR_MESSAGE = "Store MUST NOT be null."
+    STORE_ERROR_MESSAGE = "store must be instance of Store."
