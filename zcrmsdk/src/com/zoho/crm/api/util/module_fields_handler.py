@@ -117,7 +117,7 @@ class ModuleFieldsHandler(object):
         with ModuleFieldsHandler.lock:
             try:
                 ModuleFieldsHandler.__delete_fields(module)
-                Utility.get_fields(module)
+                Utility.get_fields_info(module)
             except SDKException as ex:
                 ModuleFieldsHandler.logger.info(Constants.REFRESH_SINGLE_MODULE_FIELDS_ERROR + module + ex.__str__())
                 raise ex

@@ -10,38 +10,33 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='zcrmsdk',
-    version='4.0.0-beta3',
-    description='Zoho CRM SDK Beta SDK for ZOHO CRM 2.1 APIs',
+    name='zohocrmsdk2_1',
+    version='1.0.0',
+    description='Zoho CRM SDK for ZOHO CRM 2.1 APIs',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/zoho/zohocrm-python-sdk',
+    url='https://github.com/zoho/zohocrm-python-sdk-2.1',
     author='Zoho CRM API Team',
     author_email='support@zohocrm.com',
     scripts=[],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
-
-        # Indicate who your project is intended for
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
     install_requires=[
         'requests',
         'python-dateutil',
         'urllib3'
     ],
-
-    # What does your project relate to?
-    keywords=['development', 'zoho', 'crm', 'api', 'zcrmsdk', 'sdk', 'zcrm'],
-
-    # You can just specify the packages manually here if your project is
-    # simple. Or you can use find_packages().
+    keywords=['development', 'zoho', 'crm', 'api', 'zcrmsdk', 'sdk', 'zcrm','zohocrmsdk2_1'],
     packages=find_packages(),
     include_package_data=True
 )

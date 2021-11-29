@@ -81,7 +81,8 @@ class Downloader(Converter):
                     stream_class_name = self.module_to_class(stream_path_split[-1])
                     instance_value = self.get_class(stream_class_name, stream_path_split[0])(file_name, response)
 
-                setattr(instance, self.construct_private_member(class_name=class_name, member_name=member_name), instance_value)
+                setattr(instance,
+                        self.construct_private_member(class_name=class_name, member_name=member_name), instance_value)
 
             return instance
 
@@ -94,5 +95,3 @@ class Downloader(Converter):
         imported_module = importlib.import_module(class_path)
         class_holder = getattr(imported_module, class_name)
         return class_holder
-
-

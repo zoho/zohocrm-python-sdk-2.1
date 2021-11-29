@@ -11,6 +11,7 @@ class Org(object):
 		"""Creates an instance of Org"""
 
 		self.__country = None
+		self.__hierarchy_preferences = None
 		self.__photo_id = None
 		self.__city = None
 		self.__description = None
@@ -40,6 +41,7 @@ class Org(object):
 		self.__company_name = None
 		self.__privacy_settings = None
 		self.__primary_email = None
+		self.__hipaa_compliance_enabled = None
 		self.__iso_code = None
 		self.__key_modified = dict()
 
@@ -66,6 +68,35 @@ class Org(object):
 		
 		self.__country = country
 		self.__key_modified['country'] = 1
+
+	def get_hierarchy_preferences(self):
+		"""
+		The method to get the hierarchy_preferences
+
+		Returns:
+			HierarchyPreference: An instance of HierarchyPreference
+		"""
+
+		return self.__hierarchy_preferences
+
+	def set_hierarchy_preferences(self, hierarchy_preferences):
+		"""
+		The method to set the value to hierarchy_preferences
+
+		Parameters:
+			hierarchy_preferences (HierarchyPreference) : An instance of HierarchyPreference
+		"""
+
+		try:
+			from zcrmsdk.src.com.zoho.crm.api.org.hierarchy_preference import HierarchyPreference
+		except Exception:
+			from .hierarchy_preference import HierarchyPreference
+
+		if hierarchy_preferences is not None and not isinstance(hierarchy_preferences, HierarchyPreference):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: hierarchy_preferences EXPECTED TYPE: HierarchyPreference', None, None)
+		
+		self.__hierarchy_preferences = hierarchy_preferences
+		self.__key_modified['hierarchy_preferences'] = 1
 
 	def get_photo_id(self):
 		"""
@@ -767,6 +798,30 @@ class Org(object):
 		
 		self.__primary_email = primary_email
 		self.__key_modified['primary_email'] = 1
+
+	def get_hipaa_compliance_enabled(self):
+		"""
+		The method to get the hipaa_compliance_enabled
+
+		Returns:
+			bool: A bool representing the hipaa_compliance_enabled
+		"""
+
+		return self.__hipaa_compliance_enabled
+
+	def set_hipaa_compliance_enabled(self, hipaa_compliance_enabled):
+		"""
+		The method to set the value to hipaa_compliance_enabled
+
+		Parameters:
+			hipaa_compliance_enabled (bool) : A bool representing the hipaa_compliance_enabled
+		"""
+
+		if hipaa_compliance_enabled is not None and not isinstance(hipaa_compliance_enabled, bool):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: hipaa_compliance_enabled EXPECTED TYPE: bool', None, None)
+		
+		self.__hipaa_compliance_enabled = hipaa_compliance_enabled
+		self.__key_modified['hipaa_compliance_enabled'] = 1
 
 	def get_iso_code(self):
 		"""

@@ -12,6 +12,7 @@ class BodyWrapper(object):
 
 		self.__data = None
 		self.__trigger = None
+		self.__process = None
 		self.__duplicate_check_fields = None
 		self.__wf_trigger = None
 		self.__lar_id = None
@@ -64,6 +65,30 @@ class BodyWrapper(object):
 		
 		self.__trigger = trigger
 		self.__key_modified['trigger'] = 1
+
+	def get_process(self):
+		"""
+		The method to get the process
+
+		Returns:
+			list: An instance of list
+		"""
+
+		return self.__process
+
+	def set_process(self, process):
+		"""
+		The method to set the value to process
+
+		Parameters:
+			process (list) : An instance of list
+		"""
+
+		if process is not None and not isinstance(process, list):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: process EXPECTED TYPE: list', None, None)
+		
+		self.__process = process
+		self.__key_modified['process'] = 1
 
 	def get_duplicate_check_fields(self):
 		"""

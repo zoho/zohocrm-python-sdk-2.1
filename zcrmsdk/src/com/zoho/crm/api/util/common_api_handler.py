@@ -52,6 +52,16 @@ class CommonAPIHandler(object):
         self.__content_type = None
         self.__category_method = None
         self.__mandatory_checker = None
+    
+    def set_content_type(self, content_type):
+        """
+        The method to set the Content Type
+
+        Parameters:
+            content_type(str):  A string containing the Content Type
+        """
+
+        self.__content_type = content_type
 
     def set_api_path(self, api_path):
         """
@@ -62,31 +72,41 @@ class CommonAPIHandler(object):
         """
 
         self.__api_path = api_path
+    
+    def add_param(self, param_instance, param_value):
 
-    def get_api_path(self):
         """
-        The method to get the API Path
-
-        Returns:
-            string: A string representing the API Path
-        """
-        return self.__api_path
-
-    def set_header(self, header):
-        """
-        The method to set the API request header map.
+        The method to add an API request parameter.
 
         Parameters:
-            header(HeaderMap): A HeaderMap class instance containing the API request headers
+            param_instance (Param) : A Param instance containing the API request parameter.
+            param_value (object) : An object containing the API request parameter value.
         """
 
-        if header is None:
+        if param_value is None:
             return
 
-        if self.__header.request_headers is not None and self.__header.request_headers:
-            self.__header.request_headers.update(header.request_headers)
-        else:
-            self.__header = header
+        if self.__param is None:
+            self.__param = ParameterMap()
+
+        self.__param.add(param_instance, param_value)
+
+    def add_header(self, header_instance, header_value):
+        """
+        The method to add an API request header.
+
+        Parameters:
+            header_instance (Header) : A Header instance containing the API request header.
+            header_value (object) : An object containing the API request header value.
+        """
+
+        if header_value is None:
+            return
+
+        if self.__header is None:
+            self.__header = HeaderMap()
+
+        self.__header.add(header_instance, header_value)
 
     def set_param(self, param):
         """
@@ -103,6 +123,42 @@ class CommonAPIHandler(object):
             self.__param.request_parameters.update(param.request_parameters)
         else:
             self.__param = param
+
+    def get_module_api_name(self):
+        """
+        The method to get the Module API Name
+
+        Returns:
+            string: A string representing the Module API Name
+        """
+
+        return self.__module_api_name
+
+    def set_module_api_name(self, module_api_name):
+        """
+        The method to set the Module API Name
+
+        Parameters:
+            module_api_name(str):  A string containing the Module API Name
+        """
+
+        self.__module_api_name = module_api_name
+
+    def set_header(self, header):
+        """
+        The method to set the API request header map.
+
+        Parameters:
+            header(HeaderMap): A HeaderMap class instance containing the API request headers
+        """
+
+        if header is None:
+            return
+
+        if self.__header.request_headers is not None and self.__header.request_headers:
+            self.__header.request_headers.update(header.request_headers)
+        else:
+            self.__header = header
 
     def set_request(self, request):
         """
@@ -123,121 +179,6 @@ class CommonAPIHandler(object):
         """
 
         self.__http_method = http_method
-
-    def get_http_method(self):
-        """
-        The method to get the HTTP Method
-
-        Returns:
-            string: A string representing the HTTP Method
-        """
-
-        return self.__http_method
-
-    def set_module_api_name(self, module_api_name):
-        """
-        The method to set the Module API Name
-
-        Parameters:
-            module_api_name(str):  A string containing the Module API Name
-        """
-
-        self.__module_api_name = module_api_name
-
-    def get_module_api_name(self):
-        """
-        The method to get the Module API Name
-
-        Returns:
-            string: A string representing the Module API Name
-        """
-
-        return self.__module_api_name
-
-    def set_content_type(self, content_type):
-        """
-        The method to set the Content Type
-
-        Parameters:
-            content_type(str):  A string containing the Content Type
-        """
-
-        self.__content_type = content_type
-
-    def set_category_method(self, category_method):
-        """
-        The method to set the Category Method
-
-        Parameters:
-            category_method(str):  A string containing the Category method.
-        """
-
-        self.__category_method = category_method
-
-    def get_category_method(self):
-        """
-        The method to get the Category Method
-
-        Returns:
-            string: A string representing the Category method.
-        """
-
-        return self.__category_method
-
-    def set_mandatory_checker(self, mandatory_checker):
-        """
-        The method to set the Mandatory Checker
-
-        Parameters:
-            mandatory_checker(bool): A boolean containing the Mandatory Checker.
-        """
-
-        self.__mandatory_checker = mandatory_checker
-
-    def get_mandatory_checker(self):
-        """
-        The method to get the Mandatory Checker
-
-        Returns:
-            bool: A boolean representing the Mandatory Checker.
-        """
-        return self.__mandatory_checker
-
-    def add_param(self, param_instance, param_value):
-
-        """
-        The method to add an API request parameter.
-
-        Parameters:
-            param_instance (Param) : A Param instance containing the API request parameter.
-            param_value (object) : An object containing the API request parameter value.
-        """
-
-        if param_value is None:
-            return
-
-        if self.__param is None:
-            self.__param = ParameterMap()
-
-        self.__param.add(param_instance, param_value)
-
-    def add_header(self, header_instance, header_value):
-
-        """
-        The method to add an API request header.
-
-        Parameters:
-            header_instance (Header) : A Header instance containing the API request header.
-            header_value (object) : An object containing the API request header value.
-        """
-
-        if header_value is None:
-            return
-
-        if self.__header is None:
-            self.__header = HeaderMap()
-
-        self.__header.add(header_instance, header_value)
 
     def api_call(self, class_name, encode_type):
 
@@ -296,7 +237,9 @@ class CommonAPIHandler(object):
 
         convert_instance = None
 
-        if self.__content_type is not None and self.__http_method in [Constants.REQUEST_METHOD_PATCH, Constants.REQUEST_METHOD_POST, Constants.REQUEST_METHOD_PUT]:
+        if self.__content_type is not None and \
+                self.__http_method in [Constants.REQUEST_METHOD_PATCH, Constants.REQUEST_METHOD_POST,
+                                       Constants.REQUEST_METHOD_PUT]:
             try:
                 convert_instance = self.get_converter_class_instance(self.__content_type.lower())
                 request = convert_instance.form_request(self.__request, self.__request.__class__.__module__, None, None)
@@ -312,7 +255,9 @@ class CommonAPIHandler(object):
 
         try:
             connector.headers[
-                Constants.ZOHO_SDK] = platform.system() + "/" + platform.release() + " python/" + platform.python_version() + ":" + Constants.SDK_VERSION
+                Constants.ZOHO_SDK] = platform.system() + "/" + \
+                                      platform.release() + "/python-2.1/" + platform.python_version() + ":" + \
+                                      Constants.SDK_VERSION
             response = connector.fire_request(convert_instance)
             return_object = None
 
@@ -476,3 +421,61 @@ class CommonAPIHandler(object):
             api_path = api_path + self.__api_path
 
         connector.url = api_path
+    
+    def get_mandatory_checker(self):
+        """
+        The method to get the Mandatory Checker
+
+        Returns:
+            bool: A boolean representing the Mandatory Checker.
+        """
+        return self.__mandatory_checker
+        
+    def set_mandatory_checker(self, mandatory_checker):
+        """
+        The method to set the Mandatory Checker
+
+        Parameters:
+            mandatory_checker(bool): A boolean containing the Mandatory Checker.
+        """
+
+        self.__mandatory_checker = mandatory_checker
+
+    def get_http_method(self):
+        """
+        The method to get the HTTP Method
+
+        Returns:
+            string: A string representing the HTTP Method
+        """
+
+        return self.__http_method
+    
+    def get_category_method(self):
+        """
+        The method to get the Category Method
+
+        Returns:
+            string: A string representing the Category method.
+        """
+
+        return self.__category_method
+
+    def set_category_method(self, category_method):
+        """
+        The method to set the Category Method
+
+        Parameters:
+            category_method(str):  A string containing the Category method.
+        """
+
+        self.__category_method = category_method
+
+    def get_api_path(self):
+        """
+        The method to get the API Path
+
+        Returns:
+            string: A string representing the API Path
+        """
+        return self.__api_path

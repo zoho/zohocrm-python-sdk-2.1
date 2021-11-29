@@ -85,8 +85,6 @@ class SDKLogger(object):
         if logger_level is not None and Constants.LOGGER_LEVELS.__contains__(logger_level.name):
             logger.setLevel(logger_level.name)
 
-
-
     @staticmethod
     def initialize(logger_instance):
         try:

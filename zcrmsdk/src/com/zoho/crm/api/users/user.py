@@ -116,6 +116,29 @@ class User(Record):
 		
 		self.add_key_value('signature', signature)
 
+	def get_sort_order_preference(self):
+		"""
+		The method to get the sort_order_preference
+
+		Returns:
+			string: A string representing the sort_order_preference
+		"""
+
+		return self.get_key_value('sort_order_preference')
+
+	def set_sort_order_preference(self, sort_order_preference):
+		"""
+		The method to set the value to sort_order_preference
+
+		Parameters:
+			sort_order_preference (string) : A string representing the sort_order_preference
+		"""
+
+		if sort_order_preference is not None and not isinstance(sort_order_preference, str):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: sort_order_preference EXPECTED TYPE: str', None, None)
+		
+		self.add_key_value('sort_order_preference', sort_order_preference)
+
 	def get_city(self):
 		"""
 		The method to get the city
@@ -465,6 +488,29 @@ class User(Record):
 			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: country_locale EXPECTED TYPE: str', None, None)
 		
 		self.add_key_value('country_locale', country_locale)
+
+	def get_sandboxdeveloper(self):
+		"""
+		The method to get the sandboxdeveloper
+
+		Returns:
+			bool: A bool representing the sandboxdeveloper
+		"""
+
+		return self.get_key_value('sandboxDeveloper')
+
+	def set_sandboxdeveloper(self, sandboxdeveloper):
+		"""
+		The method to set the value to sandboxdeveloper
+
+		Parameters:
+			sandboxdeveloper (bool) : A bool representing the sandboxdeveloper
+		"""
+
+		if sandboxdeveloper is not None and not isinstance(sandboxdeveloper, bool):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: sandboxdeveloper EXPECTED TYPE: bool', None, None)
+		
+		self.add_key_value('sandboxDeveloper', sandboxdeveloper)
 
 	def get_first_name(self):
 		"""
@@ -958,3 +1004,26 @@ class User(Record):
 			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: name EXPECTED TYPE: str', None, None)
 		
 		self.add_key_value('name', name)
+
+	def get_category(self):
+		"""
+		The method to get the category
+
+		Returns:
+			string: A string representing the category
+		"""
+
+		return self.get_key_value('category')
+
+	def set_category(self, category):
+		"""
+		The method to set the value to category
+
+		Parameters:
+			category (string) : A string representing the category
+		"""
+
+		if category is not None and not isinstance(category, str):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: category EXPECTED TYPE: str', None, None)
+		
+		self.add_key_value('category', category)

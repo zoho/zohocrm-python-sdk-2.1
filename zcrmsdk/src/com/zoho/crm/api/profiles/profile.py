@@ -20,7 +20,6 @@ class Profile(object):
 		self.__default = None
 		self.__description = None
 		self.__id = None
-		self.__category = None
 		self.__custom = None
 		self.__created_by = None
 		self.__sections = None
@@ -281,30 +280,6 @@ class Profile(object):
 		
 		self.__id = id
 		self.__key_modified['id'] = 1
-
-	def get_category(self):
-		"""
-		The method to get the category
-
-		Returns:
-			bool: A bool representing the category
-		"""
-
-		return self.__category
-
-	def set_category(self, category):
-		"""
-		The method to set the value to category
-
-		Parameters:
-			category (bool) : A bool representing the category
-		"""
-
-		if category is not None and not isinstance(category, bool):
-			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: category EXPECTED TYPE: bool', None, None)
-		
-		self.__category = category
-		self.__key_modified['category'] = 1
 
 	def get_custom(self):
 		"""

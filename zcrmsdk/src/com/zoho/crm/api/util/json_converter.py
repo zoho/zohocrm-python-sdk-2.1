@@ -69,7 +69,8 @@ class JSONConverter(Converter):
             return return_json
 
         else:
-            return self.is_not_record_request(request_instance, class_name, class_detail, instance_number, class_member_detail)
+            return self.is_not_record_request(request_instance, class_name, class_detail,
+                                              instance_number, class_member_detail)
 
     def is_not_record_request(self, request_instance, class_name, class_detail, instance_number, class_member_detail):
         try:
@@ -82,7 +83,8 @@ class JSONConverter(Converter):
         class_member_name = None
         if class_member_detail is not None:
             lookup = class_member_detail[Constants.LOOKUP] if Constants.LOOKUP in class_member_detail else False
-            skip_mandatory = class_member_detail[Constants.SKIP_MANDATORY] if Constants.SKIP_MANDATORY in class_member_detail else False
+            skip_mandatory = class_member_detail[Constants.SKIP_MANDATORY] \
+                if Constants.SKIP_MANDATORY in class_member_detail else False
             class_member_name = class_member_detail[Constants.NAME]
 
         request_json = {}
@@ -102,12 +104,14 @@ class JSONConverter(Converter):
             if Constants.REQUIRED in member_detail and member_detail[Constants.REQUIRED]:
                 required_keys[key_name] = True
 
+            if Constants.PRIMARY in member_detail and member_detail[Constants.PRIMARY] and \
+                    (Constants.REQUIRED_IN_UPDATE not in member_detail or member_detail[Constants.REQUIRED_IN_UPDATE]):
+                primary_keys[key_name] = True
+
             if Constants.REQUIRED_IN_UPDATE in member_detail and member_detail[Constants.REQUIRED_IN_UPDATE]:
                 required_in_update_keys[key_name] = True
 
-            if Constants.PRIMARY in member_detail and member_detail[Constants.PRIMARY] and (Constants.REQUIRED_IN_UPDATE not in member_detail or member_detail[Constants.REQUIRED_IN_UPDATE]):
-                primary_keys[key_name] = True
-
+            field_value = None
             if modification is not None and modification != 0:
                 field_value = getattr(request_instance,
                                       self.construct_private_member(class_name=class_name, member_name=member_name))
@@ -121,23 +125,22 @@ class JSONConverter(Converter):
                         required_in_update_keys.pop(key_name, None)
 
                     if isinstance(request_instance, FileDetails):
-                        if key_name.lower() == Constants.ATTACHMENT_ID.lower():
-                            request_json[key_name.lower()] = field_value
-
-                        elif key_name.lower() == Constants.FILE_ID.lower():
-                            request_json[key_name.lower()] = field_value
-
-                        else:
+                        if field_value is None or (isinstance(field_value, str) and field_value == "null"):
                             request_json[key_name.lower()] = None if field_value is None else field_value
-
+                        else:
+                            request_json[key_name.lower()] = field_value
+                        
                     else:
                         request_json[key_name] = self.set_data(member_detail, field_value)
 
-        if skip_mandatory or self.check_exception(class_member_name, request_instance, instance_number, lookup, required_keys, primary_keys, required_in_update_keys) is True:
+        if skip_mandatory or self.check_exception(class_member_name, request_instance, instance_number,
+                                                  lookup, required_keys, primary_keys, required_in_update_keys) is True:
             return request_json
 
-    def check_exception(self, member_name, request_instance, instance_number, lookup, required_keys, primary_keys, required_in_update_keys):
-        if bool(required_in_update_keys) and self.common_api_handler.get_category_method().upper() == Constants.REQUEST_CATEGORY_UPDATE:
+    def check_exception(self, member_name, request_instance, instance_number,
+                        lookup, required_keys, primary_keys, required_in_update_keys):
+        if bool(required_in_update_keys) and self.common_api_handler.get_category_method() is not None and \
+                self.common_api_handler.get_category_method().upper() == Constants.REQUEST_CATEGORY_UPDATE:
             error = {
                 Constants.FIELD: member_name,
                 Constants.TYPE: request_instance.__module__,
@@ -148,7 +151,8 @@ class JSONConverter(Converter):
 
             raise SDKException(Constants.MANDATORY_VALUE_ERROR, Constants.MANDATORY_KEY_ERROR, error)
 
-        if self.common_api_handler.get_mandatory_checker() is not None and self.common_api_handler.get_mandatory_checker():
+        if self.common_api_handler.get_mandatory_checker() is not None and \
+                self.common_api_handler.get_mandatory_checker():
             if self.common_api_handler.get_category_method().upper() == Constants.REQUEST_CATEGORY_CREATE:
                 if lookup:
                     if bool(primary_keys):
@@ -173,7 +177,8 @@ class JSONConverter(Converter):
 
                     raise SDKException(Constants.MANDATORY_VALUE_ERROR, Constants.MANDATORY_KEY_ERROR, error)
 
-            if self.common_api_handler.get_category_method().upper() == Constants.REQUEST_CATEGORY_UPDATE and bool(primary_keys):
+            if self.common_api_handler.get_category_method().upper() == Constants.REQUEST_CATEGORY_UPDATE and \
+                    bool(primary_keys):
                 error = {
                     Constants.FIELD: member_name,
                     Constants.TYPE: request_instance.__module__,
@@ -245,10 +250,10 @@ class JSONConverter(Converter):
         if not skip_mandatory:
             for key_name, key_detail in module_detail.items():
                 name = key_detail[Constants.NAME]
-                if Constants.REQUIRED in key_detail and key_detail[Constants.REQUIRED]:
+                if key_detail is not None and Constants.REQUIRED in key_detail and key_detail[Constants.REQUIRED]:
                     required_keys[name] = True
 
-                if Constants.PRIMARY in key_detail and key_detail[Constants.PRIMARY]:
+                if key_detail is not None and Constants.PRIMARY in key_detail and key_detail[Constants.PRIMARY]:
                     primary_keys[name] = True
 
             for key_name, key_detail in class_detail.items():
@@ -275,7 +280,8 @@ class JSONConverter(Converter):
                 key_detail = class_detail[member_name]
 
             if len(key_detail) > 0:
-                if Constants.READ_ONLY in key_detail or (Constants.NAME not in key_detail):
+                if (Constants.READ_ONLY in key_detail and bool(key_detail[Constants.READ_ONLY])) or \
+                        (Constants.NAME not in key_detail):
                     continue
 
                 if self.value_checker(class_name, key_name, key_detail, key_value, self.unique_dict, instance_number):
@@ -290,7 +296,8 @@ class JSONConverter(Converter):
 
             request_json[key_name] = json_value
 
-        if skip_mandatory or self.check_exception(class_member_name, record_instance, instance_number, lookup, required_keys, primary_keys, {}) is True:
+        if skip_mandatory or self.check_exception(class_member_name, record_instance, instance_number,
+                                                  lookup, required_keys, primary_keys, {}) is True:
             return request_json
 
     def set_data(self, member_detail, field_value):
@@ -303,11 +310,15 @@ class JSONConverter(Converter):
             elif data_type == Constants.MAP_NAMESPACE:
                 return self.set_json_object(field_value, member_detail)
 
-            elif data_type == Constants.CHOICE_NAMESPACE or (Constants.STRUCTURE_NAME in member_detail and member_detail[Constants.STRUCTURE_NAME] == Constants.CHOICE_NAMESPACE):
+            elif data_type == Constants.CHOICE_NAMESPACE or \
+                    (Constants.STRUCTURE_NAME in member_detail and
+                     member_detail[Constants.STRUCTURE_NAME] == Constants.CHOICE_NAMESPACE):
                 return field_value.get_value()
 
             elif Constants.STRUCTURE_NAME in member_detail and Constants.MODULE in member_detail:
-                return self.is_record_request(field_value, self.__get_module_detail_from_user_spec_json(member_detail[Constants.MODULE]), None, member_detail)
+                return self.is_record_request(
+                    field_value, self.__get_module_detail_from_user_spec_json(
+                        member_detail[Constants.MODULE]), None, member_detail)
 
             elif Constants.STRUCTURE_NAME in member_detail:
                 return self.form_request(field_value, member_detail[Constants.STRUCTURE_NAME], None, member_detail)
@@ -358,7 +369,10 @@ class JSONConverter(Converter):
                 elif Constants.MODULE in member_detail and member_detail[Constants.MODULE] is not None:
                     instance_count = 0
                     for request in request_objects:
-                        json_array.append(self.is_record_request(request, self.__get_module_detail_from_user_spec_json(member_detail[Constants.MODULE]), instance_count, member_detail))
+                        json_array.append(
+                            self.is_record_request(request,
+                                                   self.__get_module_detail_from_user_spec_json(
+                                                       member_detail[Constants.MODULE]), instance_count, member_detail))
                         instance_count += 1
 
                 else:
@@ -405,7 +419,6 @@ class JSONConverter(Converter):
         if Constants.INTERFACE in class_detail and class_detail[Constants.INTERFACE] is not None:
             classes = class_detail[Constants.CLASSES]
             instance = self.find_match(classes, response_json)
-
         else:
             imported_module = importlib.import_module(path_split[0])
             class_holder = getattr(imported_module, class_name)
@@ -587,7 +600,8 @@ class JSONConverter(Converter):
             import os
             from ..initializer import Initializer
 
-        record_field_details_path = os.path.join(Initializer.get_initializer().resource_path,Constants.FIELD_DETAILS_DIRECTORY, Converter.get_encoded_file_name())
+        record_field_details_path = os.path.join(Initializer.get_initializer().resource_path,
+                                                 Constants.FIELD_DETAILS_DIRECTORY, Converter.get_encoded_file_name())
 
         record_field_details = Initializer.get_json(record_field_details_path)
         module_detail = Utility.get_json_object(record_field_details, module)
@@ -623,7 +637,6 @@ class JSONConverter(Converter):
         return self.get_response(response_json, pack)
 
     def find_ratio(self, class_name, response_json):
-
         try:
             from zcrmsdk.src.com.zoho.crm.api.initializer import Initializer
         except Exception:
@@ -653,10 +666,13 @@ class JSONConverter(Converter):
                         data_type = Constants.LIST_NAMESPACE
 
                     if data_type == member_detail[Constants.TYPE] or (
-                            member_detail[Constants.TYPE] in Constants.DATA_TYPE and isinstance(key_data, Constants.DATA_TYPE.get(member_detail[Constants.TYPE]))):
+                            member_detail[Constants.TYPE] in Constants.DATA_TYPE and
+                            isinstance(key_data, Constants.DATA_TYPE.get(member_detail[Constants.TYPE]))):
 
                         matches += 1
-
+                    elif key_name.lower() == Constants.COUNT.lower() and \
+                            member_detail[Constants.TYPE].lower() == Constants.LONG_NAMESPACE.lower():
+                        matches += 1
                     elif member_detail[Constants.TYPE] == Constants.CHOICE_NAMESPACE:
                         values = list(member_detail[Constants.VALUES])
                         for value in values:
@@ -675,8 +691,8 @@ class JSONConverter(Converter):
 
         return matches / total_points
 
-    def build_name(self, member_name):
-        name_split = str(member_name).split('_')
+    def build_name(self, key_name):
+        name_split = str(key_name).split('_')
         sdk_name = name_split[0].lower()
 
         if len(name_split) > 1:

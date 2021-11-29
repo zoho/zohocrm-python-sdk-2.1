@@ -55,13 +55,16 @@ class FileStore(TokenStore):
                             redirect_url = next_record[8] if next_record[8] is not None and len(
                                 next_record[8]) > 0 else None
 
-                            oauthtoken = OAuthToken(client_id=next_record[2], client_secret=next_record[3],
-                                                     grant_token=grant_token,
-                                                     redirect_url=redirect_url, refresh_token=next_record[4])
+                            oauthtoken = token
                             oauthtoken.set_id(next_record[0])
                             oauthtoken.set_user_mail(next_record[1])
-                            oauthtoken.set_expires_in(next_record[7])
+                            oauthtoken.set_client_id(next_record[2])
+                            oauthtoken.set_client_secret(next_record[3])
+                            oauthtoken.set_refresh_token(next_record[4])
                             oauthtoken.set_access_token(next_record[5])
+                            oauthtoken.set_grant_token(grant_token)
+                            oauthtoken.set_expires_in(next_record[7])
+                            oauthtoken.set_redirect_url(redirect_url)
 
                             return oauthtoken
 
@@ -120,11 +123,12 @@ class FileStore(TokenStore):
                     redirect_url = next_record[8] if next_record[8] is not None and len(
                         next_record[8]) > 0 else None
 
-                    token = OAuthToken(client_id=next_record[2], client_secret=next_record[3], grant_token=grant_token, redirect_url=redirect_url, refresh_token=next_record[4])
+                    token = OAuthToken(client_id=next_record[2], client_secret=next_record[3], grant_token=grant_token, refresh_token=next_record[4])
                     token.set_id(next_record[0])
                     token.set_user_mail(next_record[1])
-                    token.set_expires_in(next_record[7])
                     token.set_access_token(next_record[5])
+                    token.set_expires_in(next_record[7])
+                    token.set_redirect_url(redirect_url)
                     tokens.append(token)
 
             return tokens
@@ -157,12 +161,17 @@ class FileStore(TokenStore):
                             redirect_url = next_record[8] if next_record[8] is not None and len(
                                 next_record[8]) > 0 else None
 
-                            oauthtoken = OAuthToken(client_id=next_record[2], client_secret=next_record[3], grant_token=grant_token,
-                                               redirect_url=redirect_url, refresh_token=next_record[4])
+                            oauthtoken = token
+
                             oauthtoken.set_id(next_record[0])
                             oauthtoken.set_user_mail(next_record[1])
-                            oauthtoken.set_expires_in(next_record[7])
+                            oauthtoken.set_client_id(next_record[2])
+                            oauthtoken.set_client_secret(next_record[3])
+                            oauthtoken.set_refresh_token(next_record[4])
                             oauthtoken.set_access_token(next_record[5])
+                            oauthtoken.set_grant_token(grant_token)
+                            oauthtoken.set_expires_in(next_record[7])
+                            oauthtoken.set_redirect_url(redirect_url)
 
                             return oauthtoken
                     if not is_row_present:

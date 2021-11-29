@@ -274,6 +274,8 @@ class GetNotesParam(object):
 	page = Param('page', 'com.zoho.crm.api.Notes.GetNotesParam')
 	per_page = Param('per_page', 'com.zoho.crm.api.Notes.GetNotesParam')
 	fields = Param('fields', 'com.zoho.crm.api.Notes.GetNotesParam')
+	sort_order = Param('sort_order', 'com.zoho.crm.api.Notes.GetNotesParam')
+	sort_by = Param('sort_by', 'com.zoho.crm.api.Notes.GetNotesParam')
 
 
 class GetNotesHeader(object):

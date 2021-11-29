@@ -39,12 +39,58 @@ class Utility(object):
     new_file = False
     get_modified_modules = False
     force_refresh = False
+    module_api_name = None
+    api_supported_modules = {}
     lock = threading.RLock()
     logger = logging.getLogger('SDKLogger')
 
     @staticmethod
-    def set_handler_api_path(module_api_name, handler_instance):
+    def file_exists_flow(module_api_name, record_field_details_path, last_modified_time):
+        with Utility.lock:
+            record_field_details_json = Initializer.get_json(record_field_details_path)
 
+            initializer = Initializer.get_initializer()
+
+            if initializer.sdk_config.get_auto_refresh_fields() and not Utility.new_file and not Utility.get_modified_modules and (Constants.FIELDS_LAST_MODIFIED_TIME not in record_field_details_json or Utility.force_refresh or (time.time() * 1000 - record_field_details_json[Constants.FIELDS_LAST_MODIFIED_TIME]) > 3600000):
+                Utility.get_modified_modules = True
+                last_modified_time = record_field_details_json[Constants.FIELDS_LAST_MODIFIED_TIME] if not Utility.force_refresh and Constants.FIELDS_LAST_MODIFIED_TIME in record_field_details_json else None
+                Utility.modify_fields(record_field_details_path, last_modified_time)
+                Utility.get_modified_modules = False
+
+            elif not Initializer.get_initializer().sdk_config.get_auto_refresh_fields() and Utility.force_refresh and not Utility.get_modified_modules:
+                Utility.get_modified_modules = True
+                Utility.modify_fields(record_field_details_path, last_modified_time)
+                Utility.get_modified_modules = False
+
+            record_field_details_json = Initializer.get_json(record_field_details_path)
+
+            if module_api_name is None or (module_api_name.lower() in record_field_details_json and record_field_details_json[module_api_name.lower()] is not None):
+                return
+
+            else:
+                Utility.fill_data_type()
+                record_field_details_json[module_api_name.lower()] = {}
+                Utility.write_to_file(file_path=record_field_details_path, file_contents=record_field_details_json)
+                field_details = Utility.get_fields_details(module_api_name)
+                record_field_details_json = Initializer.get_json(record_field_details_path)
+                record_field_details_json[module_api_name.lower()] = field_details
+                Utility.write_to_file(file_path=record_field_details_path, file_contents=record_field_details_json)
+
+    @staticmethod
+    def verify_module_api_name(module_api_name):
+        if module_api_name is not None and module_api_name.lower() in Constants.DEFAULT_MODULE_NAME_VS_API_NAME and Constants.DEFAULT_MODULE_NAME_VS_API_NAME.get(module_api_name.lower()) is not None:
+            return Constants.DEFAULT_MODULE_NAME_VS_API_NAME.get(module_api_name.lower())
+
+        record_field_details_path = Utility.get_file_name()
+        if os.path.exists(record_field_details_path):
+            fields_json = Initializer.get_json(record_field_details_path)
+            if Constants.SDK_MODULE_METADATA in fields_json and module_api_name.lower() in fields_json[Constants.SDK_MODULE_METADATA]:
+                return fields_json[Constants.SDK_MODULE_METADATA][module_api_name.lower()][Constants.API_NAME]
+
+        return module_api_name
+
+    @staticmethod
+    def set_handler_api_path(module_api_name, handler_instance):
         if handler_instance is None:
             return
 
@@ -57,14 +103,21 @@ class Utility(object):
                 split_lower = api_path_split[i].lower()
                 if split_lower == module_api_name.lower():
                     api_path_split[i] = module_api_name
-                elif split_lower in Constants.DEFAULT_MODULENAME_VS_APINAME and Constants.DEFAULT_MODULENAME_VS_APINAME.get(split_lower) is not None:
-                    api_path_split[i] = Constants.DEFAULT_MODULENAME_VS_APINAME.get(split_lower)
+                elif split_lower in Constants.DEFAULT_MODULE_NAME_VS_API_NAME and \
+                        Constants.DEFAULT_MODULE_NAME_VS_API_NAME.get(split_lower) is not None:
+                    api_path_split[i] = Constants.DEFAULT_MODULE_NAME_VS_API_NAME.get(split_lower)
 
             api_path = "/".join(api_path_split)
             handler_instance.set_api_path(api_path)
 
     @staticmethod
     def get_fields(module_api_name, handler_instance=None):
+        with Utility.lock:
+            Utility.module_api_name = module_api_name
+            Utility.get_fields_info(module_api_name, handler_instance)
+
+    @staticmethod
+    def get_fields_info(module_api_name, handler_instance=None):
 
         """
         This method to fetch field details of the current module for the current user and store the result in a JSON file.
@@ -81,42 +134,53 @@ class Utility(object):
 
         last_modified_time = None
 
+        record_field_details_path = None
+
         try:
             with Utility.lock:
-                resources_path = os.path.join(Initializer.get_initializer().resource_path,
+                if module_api_name is not None and Utility.search_json_details(module_api_name) is not None:
+                    return
+                
+                initializer = Initializer.get_initializer()
+
+                resources_path = os.path.join(initializer.resource_path,
                                               Constants.FIELD_DETAILS_DIRECTORY)
 
                 if not os.path.exists(resources_path):
-                    if module_api_name is not None and Utility.search_json_details(module_api_name) is not None:
-                        return
                     os.makedirs(resources_path)
 
                 module_api_name = Utility.verify_module_api_name(module_api_name)
 
                 Utility.set_handler_api_path(module_api_name, handler_instance)
 
+                if handler_instance is not None and handler_instance.get_module_api_name() is None and module_api_name.lower() not in Constants.SKIP_MODULES:
+                    return
+
                 record_field_details_path = Utility.get_file_name()
 
                 if os.path.exists(record_field_details_path):
                     Utility.file_exists_flow(module_api_name, record_field_details_path, last_modified_time)
-                elif Initializer.get_initializer().sdk_config.get_auto_refresh_fields():
+                elif initializer.sdk_config.get_auto_refresh_fields():
                     Utility.new_file = True
                     Utility.fill_data_type()
-                    api_supported_modules = Utility.get_modules(None)
+                    if len(Utility.api_supported_modules) == 0:
+                        Utility.api_supported_modules = Utility.get_modules(None)
                     record_field_details_json = Initializer.get_json(record_field_details_path) if os.path.exists(record_field_details_path) else {}
 
                     record_field_details_json[Constants.FIELDS_LAST_MODIFIED_TIME] = time.time() * 1000
-
-                    for module in api_supported_modules:
-                        if module.lower() not in record_field_details_json:
-                            record_field_details_json[module.lower()] = {}
-                            Utility.write_to_file(file_path=record_field_details_path,
-                                                  file_contents=record_field_details_json)
-                            field_details = Utility.get_fields_details(api_supported_modules[module][Constants.API_NAME])
-                            record_field_details_json = Initializer.get_json(record_field_details_path)
-                            record_field_details_json[module.lower()] = field_details
-                            Utility.write_to_file(file_path=record_field_details_path,
-                                                  file_contents=record_field_details_json)
+                    
+                    if len(Utility.api_supported_modules) > 0:
+                        for module in Utility.api_supported_modules:
+                            if module.lower() not in record_field_details_json:
+                                module_data = Utility.api_supported_modules[module]
+                                record_field_details_json[module.lower()] = {}
+                                Utility.write_to_file(file_path=record_field_details_path,
+                                                    file_contents=record_field_details_json)
+                                field_details = Utility.get_fields_details(module_data[Constants.API_NAME])
+                                record_field_details_json = Initializer.get_json(record_field_details_path)
+                                record_field_details_json[module.lower()] = field_details
+                                Utility.write_to_file(file_path=record_field_details_path,
+                                                    file_contents=record_field_details_json)
 
                     Utility.new_file = False
 
@@ -182,50 +246,7 @@ class Utility(object):
 
             for module in modified_modules.keys():
                 module_data = modified_modules[module]
-                Utility.get_fields(module_data[Constants.API_NAME])
-
-    @staticmethod
-    def file_exists_flow(module_api_name, record_field_details_path, last_modified_time):
-        with Utility.lock:
-            record_field_details_json = Initializer.get_json(record_field_details_path)
-
-            if Initializer.get_initializer().sdk_config.get_auto_refresh_fields() and not Utility.new_file and not Utility.get_modified_modules and (Constants.FIELDS_LAST_MODIFIED_TIME not in record_field_details_json or Utility.force_refresh or (time.time() * 1000 - record_field_details_json[Constants.FIELDS_LAST_MODIFIED_TIME]) > 3600000):
-                Utility.get_modified_modules = True
-                last_modified_time = record_field_details_json[Constants.FIELDS_LAST_MODIFIED_TIME] if not Utility.force_refresh and Constants.FIELDS_LAST_MODIFIED_TIME in record_field_details_json else None
-                Utility.modify_fields(record_field_details_path, last_modified_time)
-                Utility.get_modified_modules = False
-
-            elif not Initializer.get_initializer().sdk_config.get_auto_refresh_fields() and Utility.force_refresh and not Utility.get_modified_modules:
-                Utility.get_modified_modules = True
-                Utility.modify_fields(record_field_details_path, last_modified_time)
-                Utility.get_modified_modules = False
-
-            record_field_details_json = Initializer.get_json(record_field_details_path)
-
-            if module_api_name is None or module_api_name.lower() in record_field_details_json:
-                return
-
-            else:
-                Utility.fill_data_type()
-                record_field_details_json[module_api_name.lower()] = {}
-                Utility.write_to_file(file_path=record_field_details_path, file_contents=record_field_details_json)
-                field_details = Utility.get_fields_details(module_api_name)
-                record_field_details_json = Initializer.get_json(record_field_details_path)
-                record_field_details_json[module_api_name.lower()] = field_details
-                Utility.write_to_file(file_path=record_field_details_path, file_contents=record_field_details_json)
-
-    @staticmethod
-    def verify_module_api_name(module_api_name):
-        if module_api_name is not None and Constants.DEFAULT_MODULENAME_VS_APINAME.get(module_api_name.lower()) is not None:
-            return Constants.DEFAULT_MODULENAME_VS_APINAME.get(module_api_name.lower())
-
-        record_field_details_path = Utility.get_file_name()
-        if os.path.exists(record_field_details_path):
-            fields_json = Initializer.get_json(record_field_details_path)
-            if Constants.SDK_MODULE_METADATA in fields_json and module_api_name.lower() in fields_json[Constants.SDK_MODULE_METADATA]:
-                return fields_json[Constants.SDK_MODULE_METADATA][module_api_name.lower()][Constants.API_NAME]
-
-        return module_api_name
+                Utility.get_fields_info(module_data[Constants.API_NAME])
 
     @staticmethod
     def delete_fields(record_field_details_json, module):
@@ -245,7 +266,7 @@ class Utility(object):
     def get_file_name():
         import zcrmsdk.src.com.zoho.crm.api.util.converter as Converter
 
-        return os.path.join(Initializer.get_initializer().resource_path, Constants.FIELD_DETAILS_DIRECTORY,Converter.Converter.get_encoded_file_name())
+        return os.path.join(Initializer.get_initializer().resource_path, Constants.FIELD_DETAILS_DIRECTORY, Converter.Converter.get_encoded_file_name())
 
     @staticmethod
     def get_related_lists(related_module_name, module_api_name, common_api_handler):
@@ -260,16 +281,16 @@ class Utility(object):
                 record_field_details_path = Utility.get_file_name()
 
                 if not os.path.exists(record_field_details_path) or (
-                        os.path.exists(record_field_details_path) and key not in Initializer.get_json(
-                    record_field_details_path)):
+                        os.path.exists(record_field_details_path) and (key not in Initializer.get_json(record_field_details_path) or (Initializer.get_json(record_field_details_path)[key] == None or len(Initializer.get_json(record_field_details_path)[key]) <= 0))):
                     is_new_data = True
+                    module_api_name = Utility.verify_module_api_name(module_api_name)
                     related_list_values = Utility.get_related_list_details(module_api_name)
                     record_field_details_json = Initializer.get_json(record_field_details_path) if os.path.exists(record_field_details_path) else {}
                     record_field_details_json[key] = related_list_values
                     Utility.write_to_file(file_path=record_field_details_path, file_contents=record_field_details_json)
 
                 record_field_details_json = Initializer.get_json(record_field_details_path)
-                module_related_list = record_field_details_json[key]
+                module_related_list = record_field_details_json[key] if key in record_field_details_json else {}
 
                 if not Utility.check_related_list_exists(related_module_name, module_related_list,common_api_handler) and not is_new_data:
                     del record_field_details_json[key]
@@ -296,68 +317,10 @@ class Utility(object):
 
                 if related_list_jo[Constants.MODULE] != Constants.NULL_VALUE:
                     common_api_handler.set_module_api_name(related_list_jo[Constants.MODULE])
-                    Utility.get_fields(related_list_jo[Constants.MODULE])
+                    Utility.get_fields_info(related_list_jo[Constants.MODULE], common_api_handler)
                 return True
 
         return False
-
-    @staticmethod
-    def verify_photo_support(module_api_name):
-        with Utility.lock:
-            try:
-                module_api_name = Utility.verify_module_api_name(module_api_name)
-                if module_api_name in Constants.PHOTO_SUPPORTED_MODULES:
-                    return True
-
-                modules = Utility.get_module_names()
-                if module_api_name.lower() in modules and modules[module_api_name.lower()] is not None:
-                    module_meta_data = modules[module_api_name.lower()]
-
-                    if module_meta_data[Constants.GENERATED_TYPE] != Constants.GENERATED_TYPE_CUSTOM:
-                        raise SDKException(code=Constants.UPLOAD_PHOTO_UNSUPPORTED_ERROR,
-                                           message=Constants.UPLOAD_PHOTO_UNSUPPORTED_MESSAGE + module_api_name)
-            except SDKException as e:
-                raise e
-
-            except Exception as e:
-                sdk_exception = SDKException(message=Constants.EXCEPTION, cause=e)
-                raise sdk_exception
-
-            return True
-
-    @staticmethod
-    def get_module_names():
-        module_data = {}
-        resources_path = os.path.join(Initializer.get_initializer().resource_path,
-                                      Constants.FIELD_DETAILS_DIRECTORY)
-        if not os.path.exists(resources_path):
-            os.makedirs(resources_path)
-
-        record_field_details_path = Utility.get_file_name()
-
-        is_null = False
-        if os.path.exists(record_field_details_path):
-            json = Initializer.get_json(record_field_details_path)
-            if Constants.SDK_MODULE_METADATA not in json:
-                is_null = True
-            elif json[Constants.SDK_MODULE_METADATA] is None:
-                is_null = True
-
-        if not os.path.exists(record_field_details_path) or is_null:
-            module_data = Utility.get_modules(None)
-            Utility.write_module_meta_data(record_field_details_path, module_data)
-            return module_data
-
-        record_field_details_json = Initializer.get_json(record_field_details_path)
-        module_data = record_field_details_json[Constants.SDK_MODULE_METADATA]
-        return module_data
-
-    @staticmethod
-    def write_module_meta_data(record_field_details_path, module_data):
-        field_details_json = Initializer.get_json(record_field_details_path) if os.path.exists(
-            record_field_details_path) else {}
-        field_details_json[Constants.SDK_MODULE_METADATA] = module_data
-        Utility.write_to_file(record_field_details_path, field_details_json)
 
     @staticmethod
     def get_related_list_details(module_api_name):
@@ -374,7 +337,6 @@ class Utility(object):
             data_object = response.get_object()
 
             if data_object is not None:
-
                 if isinstance(data_object, RelatedLists.ResponseWrapper):
                     related_lists = data_object.get_related_lists()
 
@@ -463,7 +425,12 @@ class Utility(object):
                     Constants.STATUS: response_object.get_status().get_value(),
                     Constants.MESSAGE: response_object.get_message().get_value()
                 }
-                raise SDKException(code=Constants.API_EXCEPTION, details=error_response)
+                
+                exception = SDKException(code=Constants.API_EXCEPTION, details=error_response)
+
+                if Utility.module_api_name.lower() == module_api_name.lower():
+                        raise 
+                Utility.logger.error(Constants.API_EXCEPTION, exception.__str__())
 
         else:
             error_response = {
@@ -490,8 +457,65 @@ class Utility(object):
         return None
 
     @staticmethod
-    def get_modules(header):
+    def verify_photo_support(module_api_name):
+        with Utility.lock:
+            try:
+                module_api_name = Utility.verify_module_api_name(module_api_name)
+                if module_api_name.lower() in Constants.PHOTO_SUPPORTED_MODULES:
+                    return True
 
+                modules = Utility.get_module_names()
+                if module_api_name.lower() in modules and modules[module_api_name.lower()] is not None:
+                    module_meta_data = modules[module_api_name.lower()]
+
+                    if Constants.GENERATED_TYPE in module_meta_data and module_meta_data[Constants.GENERATED_TYPE] != Constants.GENERATED_TYPE_CUSTOM:
+                        raise SDKException(code=Constants.UPLOAD_PHOTO_UNSUPPORTED_ERROR,
+                                           message=Constants.UPLOAD_PHOTO_UNSUPPORTED_MESSAGE + module_api_name)
+            except SDKException as e:
+                raise e
+
+            except Exception as e:
+                sdk_exception = SDKException(message=Constants.EXCEPTION, cause=e)
+                raise sdk_exception
+
+            return True
+
+    @staticmethod
+    def get_module_names():
+        module_data = {}
+        resources_path = os.path.join(Initializer.get_initializer().resource_path,
+                                      Constants.FIELD_DETAILS_DIRECTORY)
+        if not os.path.exists(resources_path):
+            os.makedirs(resources_path)
+
+        record_field_details_path = Utility.get_file_name()
+
+        is_null = False
+        if os.path.exists(record_field_details_path):
+            json = Initializer.get_json(record_field_details_path)
+            if Constants.SDK_MODULE_METADATA not in json:
+                is_null = True
+            elif json[Constants.SDK_MODULE_METADATA] is None or len(json[Constants.SDK_MODULE_METADATA])==0:
+                is_null = True
+
+        if not os.path.exists(record_field_details_path) or is_null:
+            module_data = Utility.get_modules(None)
+            Utility.write_module_meta_data(record_field_details_path, module_data)
+            return module_data
+
+        record_field_details_json = Initializer.get_json(record_field_details_path)
+        module_data = record_field_details_json[Constants.SDK_MODULE_METADATA]
+        return module_data
+
+    @staticmethod
+    def write_module_meta_data(record_field_details_path, module_data):
+        field_details_json = Initializer.get_json(record_field_details_path) if os.path.exists(
+            record_field_details_path) else {}
+        field_details_json[Constants.SDK_MODULE_METADATA] = module_data
+        Utility.write_to_file(record_field_details_path, field_details_json)
+
+    @staticmethod
+    def get_modules(header):
         import zcrmsdk.src.com.zoho.crm.api.modules as Modules
 
         api_names = {}
@@ -525,7 +549,7 @@ class Utility(object):
                 }
                 raise SDKException(code=Constants.API_EXCEPTION, details=error_response)
 
-        if Utility.force_refresh:
+        if header is None:
             try:
                 Utility.write_module_meta_data(Utility.get_file_name(), api_names)
             except Exception as e:
@@ -537,7 +561,7 @@ class Utility(object):
     @staticmethod
     def refresh_modules():
         Utility.force_refresh = True
-        Utility.get_fields(None)
+        Utility.get_fields_info(None)
         Utility.force_refresh = False
 
     @staticmethod
@@ -549,20 +573,6 @@ class Utility(object):
         return None
 
     @staticmethod
-    def check_data_type(value, type):
-
-        if value is None:
-            return False
-        if type.lower() == Constants.OBJECT.lower():
-            return True
-        type = Constants.DATA_TYPE.get(type)
-        class_name = value.__class__
-        if class_name == type:
-            return True
-        else:
-            return False
-
-    @staticmethod
     def set_data_type(field_detail, field, module_api_name):
         api_type = field.get_data_type()
         module = ''
@@ -572,19 +582,10 @@ class Utility(object):
                 module_api_name.lower() == Constants.CALLS and key_name.lower() == Constants.CALL_DURATION):
             field_detail[Constants.REQUIRED] = True
 
-        if key_name in Constants.KEY_VS_INVENTORY_MODULE and module_api_name.lower() == Constants.KEY_VS_INVENTORY_MODULE.get(
-                key_name):
+        if key_name.lower() == Constants.PRICING_DETAILS.lower() and module_api_name.lower() == Constants.PRICE_BOOKS:
             field_detail[Constants.NAME] = key_name
             field_detail[Constants.TYPE] = Constants.LIST_NAMESPACE
-            field_detail[Constants.STRUCTURE_NAME] = Constants.INVENTORY_LINE_ITEMS
-            field_detail[Constants.SKIP_MANDATORY] = True
-
-            return
-
-        elif key_name.lower() == Constants.PRICING_DETAILS.lower() and module_api_name.lower() == Constants.PRICE_BOOKS:
-            field_detail[Constants.NAME] = key_name
-            field_detail[Constants.TYPE] = Constants.LIST_NAMESPACE
-            field_detail[Constants.STRUCTURE_NAME] = Constants.PRICINGDETAILS
+            field_detail[Constants.STRUCTURE_NAME] = Constants.PRICING_DETAILS_NAMESPACE
             field_detail[Constants.SKIP_MANDATORY] = True
 
             return
@@ -598,8 +599,8 @@ class Utility(object):
 
             return
 
-        elif key_name.lower() == Constants.COMMENTS.lower() and (
-                module_api_name.lower() == Constants.SOLUTIONS or module_api_name.lower() == Constants.CASES):
+        elif key_name.lower() == Constants.COMMENTS.lower() and \
+                (module_api_name.lower() == Constants.SOLUTIONS or module_api_name.lower() == Constants.CASES):
             field_detail[Constants.NAME] = key_name
             field_detail[Constants.TYPE] = Constants.LIST_NAMESPACE
             field_detail[Constants.STRUCTURE_NAME] = Constants.COMMENT_NAMESPACE
@@ -615,14 +616,28 @@ class Utility(object):
 
             return
 
-        elif (key_name.lower() == Constants.TERRITORIES.lower() or key_name.lower() == Constants.TERRITORY.lower()) and field.get_custom_field() is not None and not field.get_custom_field():
+
+        elif (key_name.lower() == Constants.TERRITORIES.lower() or key_name.lower() == Constants.TERRITORY.lower()) and field.get_custom_field() is not None and field.get_custom_field() == False :
             field_detail[Constants.NAME] = key_name
             field_detail[Constants.TYPE] = Constants.LIST_NAMESPACE
             field_detail[Constants.STRUCTURE_NAME] = Constants.TERRITORY_NAMESPACE
             field_detail[Constants.LOOKUP] = True
 
             return
-        elif key_name.lower() == Constants.TAX.lower() or module_api_name.lower() == Constants.PRODUCTS.lower() :
+
+        elif key_name.lower() == Constants.PRODUCT_NAME.lower() and module_api_name.lower() in Constants.INVENTORY_MODULES_ITEMS:
+            field_detail[Constants.NAME] = key_name
+            field_detail[Constants.TYPE] = Constants.LINEITEM_PRODUCT
+            field_detail[Constants.STRUCTURE_NAME] = Constants.LINEITEM_PRODUCT
+            field_detail[Constants.SKIP_MANDATORY] = True
+
+            return
+        elif key_name.lower() == Constants.DISCOUNT.lower() and module_api_name.lower() in Constants.INVENTORY_MODULES_ITEMS:
+            field_detail[Constants.NAME] = key_name
+            field_detail[Constants.TYPE] = Constants.STRING_NAMESPACE
+
+            return
+        elif key_name.lower() == Constants.TAX.lower() and module_api_name.lower() == Constants.PRODUCTS.lower() :
             field_detail[Constants.NAME] = key_name
             field_detail[Constants.TYPE] = Constants.LIST_NAMESPACE
             field_detail[Constants.STRUCTURE_NAME] = Constants.TAX_NAMESPACE
@@ -634,7 +649,7 @@ class Utility(object):
         elif api_type.lower() == Constants.FORMULA.lower():
             if field.get_formula() is not None:
                 return_type = field.get_formula().get_return_type()
-                if return_type in Utility.apitype_vs_datatype:
+                if return_type is not None and return_type in Utility.apitype_vs_datatype and Utility.apitype_vs_datatype.get(return_type) is not None: 
                     field_detail[Constants.TYPE] = Utility.apitype_vs_datatype.get(return_type)
 
             field_detail[Constants.READ_ONLY] = True
@@ -645,26 +660,24 @@ class Utility(object):
         if Constants.LOOKUP in api_type.lower():
             field_detail[Constants.LOOKUP] = True
 
-        if Constants.CONSENT_LOOKUP in api_type.lower():
+        if Constants.CONSENT_LOOKUP in api_type.lower() or Constants.OWNER_LOOKUP in api_type.lower():
             field_detail[Constants.SKIP_MANDATORY] = True
 
         if Constants.MULTI_SELECT_LOOKUP in api_type.lower():
             field_detail[Constants.SKIP_MANDATORY] = True
-            if field.get_multiselectlookup() is not None:
-                if field.get_multiselectlookup().get_linking_module() is not None:
-                    linking_module = field.get_multiselectlookup().get_linking_module()
-                    field_detail[Constants.MODULE] = linking_module
-                    module = linking_module
+            if field.get_multiselectlookup() is not None and field.get_multiselectlookup().get_linking_module() is not None:
+                linking_module = field.get_multiselectlookup().get_linking_module()
+                field_detail[Constants.MODULE] = linking_module
+                module = linking_module
 
             field_detail[Constants.SUBFORM] = True
 
         if Constants.MULTI_USER_LOOKUP in api_type.lower():
             field_detail[Constants.SKIP_MANDATORY] = True
-            if field.get_multiuserlookup() is not None:
-                if field.get_multiuserlookup().get_linking_module() is not None:
-                    linking_module = field.get_multiuserlookup().get_linking_module()
-                    field_detail[Constants.MODULE] = linking_module
-                    module = linking_module
+            if field.get_multiuserlookup() is not None and field.get_multiuserlookup().get_linking_module() is not None:
+                linking_module = field.get_multiuserlookup().get_linking_module()
+                field_detail[Constants.MODULE] = linking_module
+                module = linking_module
 
             field_detail[Constants.SUBFORM] = True
 
@@ -677,18 +690,18 @@ class Utility(object):
             values = list(map(lambda x: x.get_display_value(), field.get_pick_list_values()))
             field_detail[Constants.VALUES] = values
 
-        if api_type == Constants.SUBFORM:
+        if api_type == Constants.SUBFORM and field.get_subform() is not None:
             module = field.get_subform().get_module()
             field_detail[Constants.MODULE] = module
             field_detail[Constants.SKIP_MANDATORY] = True
             field_detail[Constants.SUBFORM] = True
 
-        if api_type == Constants.LOOKUP:
+        if api_type == Constants.LOOKUP and field.get_lookup() is not None:
             module = field.get_lookup().get_module()
 
             if module is not None and not module == Constants.SE_MODULE:
                 field_detail[Constants.MODULE] = module
-                if module.lower() == Constants.ACCOUNTS and not field.get_custom_field():
+                if module.lower() == Constants.ACCOUNTS and not (field.get_custom_field() and not field.get_custom_field()):
                     field_detail[Constants.SKIP_MANDATORY] = True
 
             else:
@@ -697,7 +710,7 @@ class Utility(object):
             field_detail[Constants.LOOKUP] = True
 
         if len(module) > 0:
-            Utility.get_fields(module)
+            Utility.get_fields_info(module)
 
         field_detail[Constants.NAME] = key_name
 
@@ -713,9 +726,9 @@ class Utility(object):
 
         field_api_names_boolean = ['boolean']
 
-        field_api_names_double = ['double', 'percent', 'lookup', 'currency']
-
         field_api_names_long = ['long', 'bigint']
+
+        field_api_names_double = ['double', 'percent', 'lookup', 'currency']
 
         field_api_names_field_file = ['fileupload']
 
@@ -725,17 +738,17 @@ class Utility(object):
 
         field_api_names_lookup = ['lookup']
 
-        field_api_names_owner_lookup = ['ownerlookup', 'userlookup']
-
-        field_api_names_multiuser_lookup = ['multiuserlookup']
-
-        field_api_names_multimodule_lookup = ['multimodulelookup']
-
         field_api_names_picklist = ['picklist']
 
         field_api_names_multiselect_picklist = ['multiselectpicklist']
 
         field_api_names_subform = ['subform']
+
+        field_api_names_owner_lookup = ['ownerlookup', 'userlookup']
+
+        field_api_names_multiuser_lookup = ['multiuserlookup']
+
+        field_api_names_multimodule_lookup = ['multimodulelookup']
 
         field_api_name_task_remind_at = ['ALARM']
 
@@ -748,6 +761,8 @@ class Utility(object):
         field_api_name_image_upload = ["imageupload"]
 
         field_api_name_multiselect_lookup = ["multiselectlookup"]
+
+        field_api_name_line_tax = ["linetax"]
 
         for field_api_name in field_api_names_string:
             Utility.apitype_vs_datatype[field_api_name] = Constants.STRING_NAMESPACE
@@ -762,7 +777,7 @@ class Utility(object):
             Utility.apitype_vs_datatype[field_api_name] = Constants.DOUBLE_NAMESPACE
 
         for field_api_name in field_api_names_long:
-            Utility.apitype_vs_datatype[field_api_name] = Constants.LONG_NAMESPACE
+            Utility.apitype_vs_datatype[field_api_name] = Constants.INTEGER_NAMESPACE
 
         for field_api_name in field_api_names_datetime:
             Utility.apitype_vs_datatype[field_api_name] = Constants.DATETIME_NAMESPACE
@@ -802,8 +817,8 @@ class Utility(object):
             Utility.apitype_vs_structurename[field_api_name] = Constants.FIELD_FILE_NAMESPACE
 
         for field_api_name in field_api_name_task_remind_at:
-            Utility.apitype_vs_datatype[field_api_name] = Constants.REMINDAT_NAMESPACE
-            Utility.apitype_vs_structurename[field_api_name] = Constants.REMINDAT_NAMESPACE
+            Utility.apitype_vs_datatype[field_api_name] = Constants.REMIND_AT_NAMESPACE
+            Utility.apitype_vs_structurename[field_api_name] = Constants.REMIND_AT_NAMESPACE
 
         for field_api_name in field_api_name_recurring_activity:
             Utility.apitype_vs_datatype[field_api_name] = Constants.RECURRING_ACTIVITY_NAMESPACE
@@ -819,11 +834,28 @@ class Utility(object):
 
         for field_api_name in field_api_name_image_upload:
             Utility.apitype_vs_datatype[field_api_name] = Constants.LIST_NAMESPACE
-            Utility.apitype_vs_structurename[field_api_name] = Constants.IMAGEUPLOAD_NAMESPACE
+            Utility.apitype_vs_structurename[field_api_name] = Constants.IMAGE_UPLOAD_NAMESPACE
 
         for field_api_name in field_api_name_multiselect_lookup:
             Utility.apitype_vs_datatype[field_api_name] = Constants.LIST_NAMESPACE
             Utility.apitype_vs_structurename[field_api_name] = Constants.RECORD_NAMESPACE
+
+        for field_api_name in field_api_name_line_tax:
+            Utility.apitype_vs_datatype[field_api_name] = Constants.LIST_NAMESPACE
+            Utility.apitype_vs_structurename[field_api_name] = Constants.LINE_TAX_NAMESPACE
+
+    @staticmethod
+    def check_data_type(value, type):
+        if value is None:
+            return False
+        if type.lower() == Constants.OBJECT.lower():
+            return True
+        type = Constants.DATA_TYPE.get(type)
+        class_name = value.__class__
+        if class_name == type:
+            return True
+        else:
+            return False
 
     @staticmethod
     def write_to_file(file_path, file_contents):

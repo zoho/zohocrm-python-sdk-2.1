@@ -3,16 +3,20 @@ try:
 	from zcrmsdk.src.com.zoho.crm.api.util import Choice, Constants
 	from zcrmsdk.src.com.zoho.crm.api.contact_roles.action_response import ActionResponse
 	from zcrmsdk.src.com.zoho.crm.api.contact_roles.response_handler import ResponseHandler
+	from zcrmsdk.src.com.zoho.crm.api.contact_roles.record_response_handler import RecordResponseHandler
 	from zcrmsdk.src.com.zoho.crm.api.contact_roles.action_handler import ActionHandler
+	from zcrmsdk.src.com.zoho.crm.api.contact_roles.record_action_handler import RecordActionHandler
 except Exception:
 	from ..exception import SDKException
 	from ..util import Choice, Constants
 	from .action_response import ActionResponse
 	from .response_handler import ResponseHandler
+	from .record_response_handler import RecordResponseHandler
 	from .action_handler import ActionHandler
+	from .record_action_handler import RecordActionHandler
 
 
-class APIException(ResponseHandler, ActionResponse, ActionHandler):
+class APIException(ResponseHandler, ActionResponse, ActionHandler, RecordResponseHandler, RecordActionHandler):
 	def __init__(self):
 		"""Creates an instance of APIException"""
 		super().__init__()

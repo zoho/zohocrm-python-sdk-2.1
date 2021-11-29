@@ -25,13 +25,13 @@ class APIHTTPConnector(object):
         """
 
         self.url = None
-        self.headers = dict()
         self.request_method = None
+        self.headers = dict()
         self.parameters = dict()
         self.request_body = None
-        self.file = False
         self.content_type = None
-
+        self.file = False
+        
     def add_header(self, header_name, header_value):
 
         """
@@ -73,7 +73,7 @@ class APIHTTPConnector(object):
         logger = logging.getLogger('SDKLogger')
         initializer = Initializer.get_initializer()
         sdk_config = initializer.sdk_config
-        read_timeout =sdk_config.get_read_timeout()
+        read_timeout = sdk_config.get_read_timeout()
         connect_timeout = sdk_config.get_connect_timeout()
 
         if read_timeout is None and connect_timeout is None:
@@ -104,8 +104,10 @@ class APIHTTPConnector(object):
 
             else:
                 proxies = {
-                    Constants.HTTP: Constants.HTTP + '://' + auth + request_proxy.get_host() + ':' + str(request_proxy.get_port()),
-                    Constants.HTTPS: Constants.HTTPS + '://' + auth + request_proxy.get_host() + ':' + str(request_proxy.get_port())
+                    Constants.HTTP: Constants.HTTP + '://' + auth + request_proxy.get_host() + ':' + str(
+                        request_proxy.get_port()),
+                    Constants.HTTPS: Constants.HTTPS + '://' + auth + request_proxy.get_host() + ':' + str(
+                        request_proxy.get_port())
                 }
 
             logger.info(self.proxy_log(request_proxy))
@@ -113,14 +115,16 @@ class APIHTTPConnector(object):
         logger.info(self.__str__())
 
         if self.request_method == Constants.REQUEST_METHOD_GET:
-            response = requests.get(url=self.url, headers=self.headers, params=self.parameters, allow_redirects=False, proxies=proxies,timeout=timeout)
+            response = requests.get(url=self.url, headers=self.headers, params=self.parameters, allow_redirects=False,
+                                    proxies=proxies, timeout=timeout)
 
         elif self.request_method == Constants.REQUEST_METHOD_PUT:
             data = None
             if self.request_body is not None:
                 data = converter_instance.append_to_request(self, self.request_body)
 
-            response = requests.put(url=self.url, data=data, params=self.parameters, headers=self.headers, allow_redirects=False, proxies=proxies)
+            response = requests.put(url=self.url, data=data, params=self.parameters, headers=self.headers,
+                                    allow_redirects=False, proxies=proxies)
 
         elif self.request_method == Constants.REQUEST_METHOD_POST:
             data = None
@@ -128,20 +132,24 @@ class APIHTTPConnector(object):
                 data = converter_instance.append_to_request(self, self.request_body)
 
             if self.file:
-                response = requests.post(url=self.url, files=data, headers=self.headers, allow_redirects=False, data={}, proxies=proxies)
+                response = requests.post(url=self.url, files=data, headers=self.headers, allow_redirects=False, data={},
+                                         proxies=proxies)
 
             else:
-                response = requests.post(url=self.url, data=data, params=self.parameters, headers=self.headers, allow_redirects=False, proxies=proxies)
+                response = requests.post(url=self.url, data=data, params=self.parameters, headers=self.headers,
+                                         allow_redirects=False, proxies=proxies)
 
         elif self.request_method == Constants.REQUEST_METHOD_PATCH:
             data = None
             if self.request_body is not None:
                 data = converter_instance.append_to_request(self, self.request_body)
 
-            response = requests.patch(url=self.url, data=data, headers=self.headers, params=self.parameters, allow_redirects=False, proxies=proxies)
+            response = requests.patch(url=self.url, data=data, headers=self.headers, params=self.parameters,
+                                      allow_redirects=False, proxies=proxies)
 
         elif self.request_method == Constants.REQUEST_METHOD_DELETE:
-            response = requests.delete(url=self.url, headers=self.headers, params=self.parameters, allow_redirects=False, proxies=proxies)
+            response = requests.delete(url=self.url, headers=self.headers, params=self.parameters,
+                                       allow_redirects=False, proxies=proxies)
 
         return response
 
@@ -149,13 +157,14 @@ class APIHTTPConnector(object):
         request_headers = self.headers.copy()
         request_headers[Constants.AUTHORIZATION] = Constants.CANT_DISCLOSE
 
-        return self.request_method + ' - ' + Constants.URL + ' = ' + self.url + ' , ' + Constants.HEADERS + ' = ' +\
+        return self.request_method + ' - ' + Constants.URL + ' = ' + self.url + ' , ' + Constants.HEADERS + ' = ' + \
                json.dumps(request_headers) \
                + ' , ' + Constants.PARAMS + ' = ' + json.dumps(self.parameters) + '.'
 
     @staticmethod
     def proxy_log(request_proxy):
-        proxy_details = Constants.PROXY_SETTINGS + Constants.PROXY_HOST + str(request_proxy.get_host()) + ', ' + Constants.PROXY_PORT + str(request_proxy.get_port())
+        proxy_details = Constants.PROXY_SETTINGS + Constants.PROXY_HOST + str(
+            request_proxy.get_host()) + ', ' + Constants.PROXY_PORT + str(request_proxy.get_port())
         if request_proxy.user is not None:
             proxy_details = proxy_details + ', ' + Constants.PROXY_USER + str(request_proxy.get_user())
 

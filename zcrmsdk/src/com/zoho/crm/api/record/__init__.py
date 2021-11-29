@@ -1,7 +1,7 @@
 from .image_upload import ImageUpload
 from .criteria import Criteria
 from .file_details import FileDetails
-from .record_operations import RecordOperations, GetRecordParam, GetRecordHeader, DeleteRecordParam, GetRecordsParam, GetRecordsHeader, DeleteRecordsParam, GetDeletedRecordsParam, GetDeletedRecordsHeader, SearchRecordsParam, GetMassUpdateStatusParam, RecordCountParam
+from .record_operations import RecordOperations, GetRecordParam, GetRecordHeader, UpdateRecordHeader, DeleteRecordParam, DeleteRecordHeader, GetRecordsParam, GetRecordsHeader, CreateRecordsHeader, UpdateRecordsHeader, DeleteRecordsParam, DeleteRecordsHeader, UpsertRecordsHeader, GetDeletedRecordsParam, GetDeletedRecordsHeader, SearchRecordsParam, SearchRecordsHeader, GetMassUpdateStatusParam, RecordCountParam, GetRecordUsingExternalIDParam, GetRecordUsingExternalIDHeader, UpdateRecordUsingExternalIDHeader, DeleteRecordUsingExternalIDParam, DeleteRecordUsingExternalIDHeader
 from .count_wrapper import CountWrapper
 from .mass_update_response_wrapper import MassUpdateResponseWrapper
 from .recurring_activity import RecurringActivity
@@ -42,17 +42,16 @@ from .reminder import Reminder
 from .mass_update_action_handler import MassUpdateActionHandler
 from .mass_update_body_wrapper import MassUpdateBodyWrapper
 from .deleted_records_wrapper import DeletedRecordsWrapper
+from .file_handler import FileHandler
 from .remind_at import RemindAt
 from .mass_update_action_response import MassUpdateActionResponse
-from .file_handler import FileHandler
 from .deleted_records_handler import DeletedRecordsHandler
 from .mass_update_territory import MassUpdateTerritory
 from .mass_update_response_handler import MassUpdateResponseHandler
-from .inventory_line_items import InventoryLineItems
 from .carry_over_tags import CarryOverTags
 from .multi_select_picklist import MultiSelectPicklist
 from .response_wrapper import ResponseWrapper
-from .wizard import Wizard
 from .comment import Comment
+from .wizard import Wizard
 from .mass_update import MassUpdate
 from .territory import Territory

@@ -14,6 +14,7 @@ class Variable(object):
 		self.__name = None
 		self.__description = None
 		self.__id = None
+		self.__source = None
 		self.__type = None
 		self.__variable_group = None
 		self.__value = None
@@ -114,6 +115,30 @@ class Variable(object):
 		
 		self.__id = id
 		self.__key_modified['id'] = 1
+
+	def get_source(self):
+		"""
+		The method to get the source
+
+		Returns:
+			string: A string representing the source
+		"""
+
+		return self.__source
+
+	def set_source(self, source):
+		"""
+		The method to set the value to source
+
+		Parameters:
+			source (string) : A string representing the source
+		"""
+
+		if source is not None and not isinstance(source, str):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: source EXPECTED TYPE: str', None, None)
+		
+		self.__source = source
+		self.__key_modified['source'] = 1
 
 	def get_type(self):
 		"""

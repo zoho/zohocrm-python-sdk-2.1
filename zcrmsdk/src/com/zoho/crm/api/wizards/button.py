@@ -19,6 +19,8 @@ class Button(object):
 		self.__color = None
 		self.__shape = None
 		self.__background_color = None
+		self.__visibility = None
+		self.__transition = None
 		self.__key_modified = dict()
 
 	def get_id(self):
@@ -246,6 +248,59 @@ class Button(object):
 		
 		self.__background_color = background_color
 		self.__key_modified['background_color'] = 1
+
+	def get_visibility(self):
+		"""
+		The method to get the visibility
+
+		Returns:
+			string: A string representing the visibility
+		"""
+
+		return self.__visibility
+
+	def set_visibility(self, visibility):
+		"""
+		The method to set the value to visibility
+
+		Parameters:
+			visibility (string) : A string representing the visibility
+		"""
+
+		if visibility is not None and not isinstance(visibility, str):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: visibility EXPECTED TYPE: str', None, None)
+		
+		self.__visibility = visibility
+		self.__key_modified['visibility'] = 1
+
+	def get_transition(self):
+		"""
+		The method to get the transition
+
+		Returns:
+			Transition: An instance of Transition
+		"""
+
+		return self.__transition
+
+	def set_transition(self, transition):
+		"""
+		The method to set the value to transition
+
+		Parameters:
+			transition (Transition) : An instance of Transition
+		"""
+
+		try:
+			from zcrmsdk.src.com.zoho.crm.api.wizards.transition import Transition
+		except Exception:
+			from .transition import Transition
+
+		if transition is not None and not isinstance(transition, Transition):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: transition EXPECTED TYPE: Transition', None, None)
+		
+		self.__transition = transition
+		self.__key_modified['transition'] = 1
 
 	def is_key_modified(self, key):
 		"""

@@ -1,4 +1,4 @@
-#  ZOHO CRM PYTHON SDK 2.1 
+# ZOHO CRM PYTHON SDK 2.1 for API version 2.1
 
 ## Table Of Contents
 
@@ -30,11 +30,11 @@ Since Zoho CRM APIs are authenticated with OAuth2 standards, you should register
 
 - Click on `ADD CLIENT`.
 
-- Choose a `Client Type`.
+- Choose the `Client Type`.
 
 - Enter **Client Name**, **Client Domain** or **Homepage URL** and **Authorized Redirect URIs** then click `CREATE`.
 
-- Your Client app would have been created and displayed by now.
+- Your Client app will be created.
 
 - Select the created OAuth client.
 
@@ -50,7 +50,6 @@ Python SDK is installable through **pip**. **pip** is a tool for dependency mana
 
 ## Including the SDK in your project
 
-You can include the SDK to your project using:
 - Install **Python** from [python.org](https://www.python.org/downloads/) (if not installed).
 
 - Install **Python SDK**
@@ -58,7 +57,7 @@ You can include the SDK to your project using:
     - Run the command below:
 
     ```sh
-    pip install zcrmsdk==4.x.xb3
+    pip install zohocrmsdk2_1==1.x.x
     ```
 - The Python SDK will be installed in your client application.
 
@@ -89,6 +88,8 @@ The persistence is achieved by writing an implementation of the inbuilt Abstract
 - **get_tokens(self)** - The method to get the all the stored tokens.
 
 - **delete_tokens(self)** - The method to delete all the stored tokens.
+
+- **get_token_by_id(self, id, token)** - The method to retrieve the user's token details based on unique ID.
 
 Note:
 
@@ -121,6 +122,9 @@ In case the user prefers to use default DataBase persistence, **MySQL** can be u
   - expiry_time varchar(20)
   
   - redirect_url varchar(255)
+
+Note:
+- Custom database name and table name can be set in DBStore instance.
 
 #### MySQL Query
 
@@ -193,7 +197,7 @@ store = FileStore(file_path='/Users/username/Documents/python_sdk_token.txt')
 ```
 
 ### Custom Persistence
-To use Custom Persistence, the user must implement the Abstract Base Class **[TokenStore](zcrmsdk/src/com/zoho/api/authenticator/store/token_store.py)** and override the methods.
+To use Custom Persistence, you must implement **[TokenStore](zcrmsdk/src/com/zoho/api/authenticator/store/token_store.py)** and override the methods.
 
 ```python
 from zcrmsdk.src.com.zoho.api.authenticator.store import TokenStore
@@ -265,17 +269,14 @@ class CustomStore(TokenStore):
 
 Before you get started with creating your Python application, you need to register your client and authenticate the app with Zoho.
 
-- Create an instance of **Logger** Class to log exception and API information.
-  ```python
-    from zcrmsdk.src.com.zoho.api.logger import Logger
-  
-    """
-    Create an instance of Logger Class that takes two parameters
-    1 -> Level of the log messages to be logged. Can be configured by typing Logger.Levels "." and choose any level from the list displayed.
-    2 -> Absolute file path, where messages need to be logged.
-    """
-    logger = Logger.get_instance(level=Logger.Levels.INFO, file_path="/Users/user_name/Documents/python_sdk_log.log")
-    ```
+| Mandatory Keys    | Optional Keys |
+| :---------------- | :------------ |
+| user              | logger        |
+| environment       | store         |
+| token             | sdk_config    |
+|                   | proxy         |
+|                   | resource_path |
+----
 
 - Create an instance of **UserSignature** Class that identifies the current user.
   ```python
@@ -285,7 +286,7 @@ Before you get started with creating your Python application, you need to regist
   user = UserSignature(email='abc@zoho.com')
   ```
 
-- Configure API environment which decides the domain and the URL to make API calls.
+- Configure the API environment which decides the domain and the URL to make API calls.
   ```python
   from zcrmsdk.src.com.zoho.crm.api.dc import USDataCenter
 
@@ -298,7 +299,7 @@ Before you get started with creating your Python application, you need to regist
   environment = USDataCenter.PRODUCTION()
   ```
 
-- Create an instance of OAuthToken with the information that you get after registering your Zoho client.
+- Create an instance of **OAuthToken** with the information that you get after registering your Zoho client.
   ```python
   from zcrmsdk.src.com.zoho.api.authenticator.oauth_token import OAuthToken
 
@@ -310,11 +311,24 @@ Before you get started with creating your Python application, you need to regist
   4 -> Refresh token.
   5 -> OAuth redirect URL. Default value is None
   6 -> id
+  7 -> Access token
   """
-  token = OAuthToken(client_id='clientId', client_secret='clientSecret', grant_token='grant_token', refresh_token="refresh_token", redirect_url='redirectURL', id="id")
+  token = OAuthToken(client_id='clientId', client_secret='clientSecret', grant_token='grant_token', refresh_token="refresh_token", redirect_url='redirectURL', id="id", access_token="access_token")
   ```
 
-- Create an instance of [TokenStore](zcrmsdk/src/com/zoho/api/authenticator/store/token_store.py) to persist tokens, used for authenticating all the requests.
+- Create an instance of **Logger** Class to log exception and API information. By default, the SDK constructs a Logger instance with level - INFO and file_path - (sdk_logs.log, created in the current working directory)
+  ```python
+    from zcrmsdk.src.com.zoho.api.logger import Logger
+  
+    """
+    Create an instance of Logger Class that takes two parameters
+    1 -> Level of the log messages to be logged. Can be configured by typing Logger.Levels "." and choose any level from the list displayed.
+    2 -> Absolute file path, where messages need to be logged.
+    """
+    logger = Logger.get_instance(level=Logger.Levels.INFO, file_path="/Users/user_name/Documents/python_sdk_log.log")
+    ```
+
+- Create an instance of **TokenStore** to persist tokens, used for authenticating all the requests. By default, the SDK creates the sdk_tokens.txt created in the current working directory) to persist the tokens.
   ```python
   from zcrmsdk.src.com.zoho.api.authenticator.store import DBStore, FileStore
 
@@ -338,11 +352,12 @@ Before you get started with creating your Python application, you need to regist
   #store = FileStore(file_path='/Users/username/Documents/python_sdk_tokens.txt')
   ```
 
-- Create an instance of **[SDKConfig](zcrmsdk/src/com/zoho/crm/api/sdk_config.py)** containing the SDK Configuration.
+- Create an instance of SDKConfig containing SDK configurations.
   ```python
   from zcrmsdk.src.com.zoho.crm.api.sdk_config import SDKConfig
 
   """
+  By default, the SDK creates the SDKConfig instance
   auto_refresh_fields (Default value is False)
     if True - all the modules' fields will be auto-refreshed in the background, every hour.
     if False - the fields will not be auto-refreshed in the background. The user can manually delete the file(s) or refresh the fields using methods from ModuleFieldsHandler(zcrmsdk/src/com/zoho/crm/api/util/module_fields_handler.py)
@@ -361,7 +376,7 @@ Before you get started with creating your Python application, you need to regist
   config = SDKConfig(auto_refresh_fields=True, pick_list_validation=False, connect_timeout=None, read_timeout=None)
   ```
 
-- The path containing the absolute directory path (in the key resource_path) to store user-specific files containing information about fields in modules. 
+- The path containing the absolute directory path to store user specific files containing module fields information. By default, the SDK stores the user-specific files within a folder in the current working directory.
   ```python
   resource_path = '/Users/user_name/Documents/python-app'
   ```

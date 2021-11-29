@@ -810,6 +810,10 @@ class Field(object):
 			return Field('Carrier')
 
 		@classmethod
+		def quoted_items(cls):
+			return Field('Quoted_Items')
+
+		@classmethod
 		def quote_stage(cls):
 			return Field('Quote_Stage')
 
@@ -844,10 +848,6 @@ class Field(object):
 		@classmethod
 		def billing_code(cls):
 			return Field('Billing_Code')
-
-		@classmethod
-		def product_details(cls):
-			return Field('Product_Details')
 
 		@classmethod
 		def subject(cls):
@@ -927,6 +927,10 @@ class Field(object):
 			return Field('Modified_By')
 
 		@classmethod
+		def invoiced_items(cls):
+			return Field('Invoiced_Items')
+
+		@classmethod
 		def billing_country(cls):
 			return Field('Billing_Country')
 
@@ -989,10 +993,6 @@ class Field(object):
 		@classmethod
 		def billing_code(cls):
 			return Field('Billing_Code')
-
-		@classmethod
-		def product_details(cls):
-			return Field('Product_Details')
 
 		@classmethod
 		def subject(cls):
@@ -1190,6 +1190,10 @@ class Field(object):
 			return Field('Carrier')
 
 		@classmethod
+		def ordered_items(cls):
+			return Field('Ordered_Items')
+
+		@classmethod
 		def quote_name(cls):
 			return Field('Quote_Name')
 
@@ -1236,10 +1240,6 @@ class Field(object):
 		@classmethod
 		def billing_code(cls):
 			return Field('Billing_Code')
-
-		@classmethod
-		def product_details(cls):
-			return Field('Product_Details')
 
 		@classmethod
 		def subject(cls):
@@ -1726,6 +1726,10 @@ class Field(object):
 			return Field('Billing_Country')
 
 		@classmethod
+		def purchase_items(cls):
+			return Field('Purchase_Items')
+
+		@classmethod
 		def id(cls):
 			return Field('id')
 
@@ -1780,10 +1784,6 @@ class Field(object):
 		@classmethod
 		def billing_code(cls):
 			return Field('Billing_Code')
-
-		@classmethod
-		def product_details(cls):
-			return Field('Product_Details')
 
 		@classmethod
 		def subject(cls):

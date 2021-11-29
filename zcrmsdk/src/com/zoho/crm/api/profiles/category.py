@@ -13,6 +13,7 @@ class Category(object):
 		self.__display_label = None
 		self.__permissions_details = None
 		self.__name = None
+		self.__module = None
 		self.__key_modified = dict()
 
 	def get_display_label(self):
@@ -86,6 +87,30 @@ class Category(object):
 		
 		self.__name = name
 		self.__key_modified['name'] = 1
+
+	def get_module(self):
+		"""
+		The method to get the module
+
+		Returns:
+			string: A string representing the module
+		"""
+
+		return self.__module
+
+	def set_module(self, module):
+		"""
+		The method to set the value to module
+
+		Parameters:
+			module (string) : A string representing the module
+		"""
+
+		if module is not None and not isinstance(module, str):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: module EXPECTED TYPE: str', None, None)
+		
+		self.__module = module
+		self.__key_modified['module'] = 1
 
 	def is_key_modified(self, key):
 		"""

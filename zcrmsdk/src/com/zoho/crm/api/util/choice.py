@@ -10,3 +10,4 @@ class Choice(object):
 
     def get_value(self):
         return self.__value
+

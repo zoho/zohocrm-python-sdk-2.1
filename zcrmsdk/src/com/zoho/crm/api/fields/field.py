@@ -41,7 +41,9 @@ class Field(object):
 		self.__id = None
 		self.__custom_field = None
 		self.__lookup = None
+		self.__filterable = None
 		self.__visible = None
+		self.__display_field = None
 		self.__pick_list_values_sorted_lexically = None
 		self.__length = None
 		self.__view_type = None
@@ -59,7 +61,6 @@ class Field(object):
 		self.__pick_list_values = None
 		self.__auto_number = None
 		self.__default_value = None
-		self.__section_id = None
 		self.__validation_rule = None
 		self.__convert_mapping = None
 		self.__type = None
@@ -732,7 +733,7 @@ class Field(object):
 		The method to get the multi_module_lookup
 
 		Returns:
-			dict: An instance of dict
+			MultiModuleLookup: An instance of MultiModuleLookup
 		"""
 
 		return self.__multi_module_lookup
@@ -742,11 +743,16 @@ class Field(object):
 		The method to set the value to multi_module_lookup
 
 		Parameters:
-			multi_module_lookup (dict) : An instance of dict
+			multi_module_lookup (MultiModuleLookup) : An instance of MultiModuleLookup
 		"""
 
-		if multi_module_lookup is not None and not isinstance(multi_module_lookup, dict):
-			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: multi_module_lookup EXPECTED TYPE: dict', None, None)
+		try:
+			from zcrmsdk.src.com.zoho.crm.api.fields.multi_module_lookup import MultiModuleLookup
+		except Exception:
+			from .multi_module_lookup import MultiModuleLookup
+
+		if multi_module_lookup is not None and not isinstance(multi_module_lookup, MultiModuleLookup):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: multi_module_lookup EXPECTED TYPE: MultiModuleLookup', None, None)
 		
 		self.__multi_module_lookup = multi_module_lookup
 		self.__key_modified['multi_module_lookup'] = 1
@@ -857,6 +863,30 @@ class Field(object):
 		self.__lookup = lookup
 		self.__key_modified['lookup'] = 1
 
+	def get_filterable(self):
+		"""
+		The method to get the filterable
+
+		Returns:
+			bool: A bool representing the filterable
+		"""
+
+		return self.__filterable
+
+	def set_filterable(self, filterable):
+		"""
+		The method to set the value to filterable
+
+		Parameters:
+			filterable (bool) : A bool representing the filterable
+		"""
+
+		if filterable is not None and not isinstance(filterable, bool):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: filterable EXPECTED TYPE: bool', None, None)
+		
+		self.__filterable = filterable
+		self.__key_modified['filterable'] = 1
+
 	def get_visible(self):
 		"""
 		The method to get the visible
@@ -880,6 +910,30 @@ class Field(object):
 		
 		self.__visible = visible
 		self.__key_modified['visible'] = 1
+
+	def get_display_field(self):
+		"""
+		The method to get the display_field
+
+		Returns:
+			bool: A bool representing the display_field
+		"""
+
+		return self.__display_field
+
+	def set_display_field(self, display_field):
+		"""
+		The method to set the value to display_field
+
+		Parameters:
+			display_field (bool) : A bool representing the display_field
+		"""
+
+		if display_field is not None and not isinstance(display_field, bool):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: display_field EXPECTED TYPE: bool', None, None)
+		
+		self.__display_field = display_field
+		self.__key_modified['display_field'] = 1
 
 	def get_pick_list_values_sorted_lexically(self):
 		"""
@@ -1323,30 +1377,6 @@ class Field(object):
 		
 		self.__default_value = default_value
 		self.__key_modified['default_value'] = 1
-
-	def get_section_id(self):
-		"""
-		The method to get the section_id
-
-		Returns:
-			int: An int representing the section_id
-		"""
-
-		return self.__section_id
-
-	def set_section_id(self, section_id):
-		"""
-		The method to set the value to section_id
-
-		Parameters:
-			section_id (int) : An int representing the section_id
-		"""
-
-		if section_id is not None and not isinstance(section_id, int):
-			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: section_id EXPECTED TYPE: int', None, None)
-		
-		self.__section_id = section_id
-		self.__key_modified['section_id'] = 1
 
 	def get_validation_rule(self):
 		"""

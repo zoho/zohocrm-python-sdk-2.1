@@ -28,7 +28,7 @@ class AUDataCenter(DataCenter):
         :return: A Environment class instance.
         """
 
-        return DataCenter.Environment("https://sandbox.zohoapis.com.au", cls(). get_iam_url(), cls().get_file_upload_url(), "au_sdb")
+        return DataCenter.Environment("https://sandbox.zohoapis.com.au", cls().get_iam_url(), cls().get_file_upload_url(), "au_sdb")
 
     @classmethod
     def DEVELOPER(cls):
@@ -38,7 +38,7 @@ class AUDataCenter(DataCenter):
         :return: A Environment class instance.
         """
 
-        return DataCenter.Environment("https://developer.zohoapis.com.au", cls(). get_iam_url(), cls().get_file_upload_url(), "au_dev")
+        return DataCenter.Environment("https://developer.zohoapis.com.au", cls().get_iam_url(), cls().get_file_upload_url(), "au_dev")
 
     def get_iam_url(self):
         return "https://accounts.zoho.com.au/oauth/v2/token"

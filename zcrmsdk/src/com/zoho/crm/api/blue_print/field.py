@@ -42,6 +42,7 @@ class Field(object):
 		self.__id = None
 		self.__custom_field = None
 		self.__lookup = None
+		self.__filterable = None
 		self.__visible = None
 		self.__pick_list_values_sorted_lexically = None
 		self.__length = None
@@ -755,7 +756,7 @@ class Field(object):
 		The method to get the multi_module_lookup
 
 		Returns:
-			dict: An instance of dict
+			MultiModuleLookup: An instance of MultiModuleLookup
 		"""
 
 		return self.__multi_module_lookup
@@ -765,11 +766,16 @@ class Field(object):
 		The method to set the value to multi_module_lookup
 
 		Parameters:
-			multi_module_lookup (dict) : An instance of dict
+			multi_module_lookup (MultiModuleLookup) : An instance of MultiModuleLookup
 		"""
 
-		if multi_module_lookup is not None and not isinstance(multi_module_lookup, dict):
-			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: multi_module_lookup EXPECTED TYPE: dict', None, None)
+		try:
+			from zcrmsdk.src.com.zoho.crm.api.fields import MultiModuleLookup
+		except Exception:
+			from ..fields import MultiModuleLookup
+
+		if multi_module_lookup is not None and not isinstance(multi_module_lookup, MultiModuleLookup):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: multi_module_lookup EXPECTED TYPE: MultiModuleLookup', None, None)
 		
 		self.__multi_module_lookup = multi_module_lookup
 		self.__key_modified['multi_module_lookup'] = 1
@@ -879,6 +885,30 @@ class Field(object):
 		
 		self.__lookup = lookup
 		self.__key_modified['lookup'] = 1
+
+	def get_filterable(self):
+		"""
+		The method to get the filterable
+
+		Returns:
+			bool: A bool representing the filterable
+		"""
+
+		return self.__filterable
+
+	def set_filterable(self, filterable):
+		"""
+		The method to set the value to filterable
+
+		Parameters:
+			filterable (bool) : A bool representing the filterable
+		"""
+
+		if filterable is not None and not isinstance(filterable, bool):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: filterable EXPECTED TYPE: bool', None, None)
+		
+		self.__filterable = filterable
+		self.__key_modified['filterable'] = 1
 
 	def get_visible(self):
 		"""
@@ -1217,7 +1247,7 @@ class Field(object):
 		The method to get the multiselectlookup
 
 		Returns:
-			list: An instance of list
+			MultiSelectLookup: An instance of MultiSelectLookup
 		"""
 
 		return self.__multiselectlookup
@@ -1227,11 +1257,16 @@ class Field(object):
 		The method to set the value to multiselectlookup
 
 		Parameters:
-			multiselectlookup (list) : An instance of list
+			multiselectlookup (MultiSelectLookup) : An instance of MultiSelectLookup
 		"""
 
-		if multiselectlookup is not None and not isinstance(multiselectlookup, list):
-			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: multiselectlookup EXPECTED TYPE: list', None, None)
+		try:
+			from zcrmsdk.src.com.zoho.crm.api.fields import MultiSelectLookup
+		except Exception:
+			from ..fields import MultiSelectLookup
+
+		if multiselectlookup is not None and not isinstance(multiselectlookup, MultiSelectLookup):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: multiselectlookup EXPECTED TYPE: MultiSelectLookup', None, None)
 		
 		self.__multiselectlookup = multiselectlookup
 		self.__key_modified['multiselectlookup'] = 1

@@ -115,12 +115,18 @@ class DBStore(TokenStore):
                     result = cursor.fetchone()
 
                     if result is not None:
-                        oauthtoken = OAuthToken(client_id=result[2], client_secret=result[3], grant_token=result[6],
-                                                 refresh_token=result[4], redirect_url=result[8])
+
+                        oauthtoken = token
                         oauthtoken.set_id(result[0])
-                        oauthtoken.set_access_token(result[5])
-                        oauthtoken.set_expires_in(str(result[7]))
                         oauthtoken.set_user_mail(result[1])
+                        oauthtoken.set_client_id(result[2])
+                        oauthtoken.set_client_secret(result[3])
+                        oauthtoken.set_refresh_token(result[4])
+                        oauthtoken.set_access_token(result[5])
+                        oauthtoken.set_grant_token(result[6])
+                        oauthtoken.set_expires_in(str(result[7]))
+                        oauthtoken.set_redirect_url(result[8])
+                        
                         return oauthtoken
 
             except Error as ex:
@@ -143,7 +149,7 @@ class DBStore(TokenStore):
                     token.set_user_mail(user.get_email())
                     self.delete_token(token)
                     cursor = connection.cursor()
-                    query = "insert into "+self.__table_name+" (id,user_mail,client_id,client_secret,refresh_token,access_token,grant_token,expiry_time,redirect_url) values (%s,%s,%s,%s,%s,%s,%s,%s,%s);"
+                    query = "insert into " + self.__table_name + " (id,user_mail,client_id,client_secret,refresh_token,access_token,grant_token,expiry_time,redirect_url) values (%s,%s,%s,%s,%s,%s,%s,%s,%s);"
                     val = (token.get_id(), user.get_email(), token.get_client_id(), token.get_client_secret(), token.get_refresh_token(), token.get_access_token(), token.get_grant_token(), token.get_expires_in(), token.get_redirect_url())
                     cursor.execute(query, val)
                     connection.commit()
@@ -194,11 +200,12 @@ class DBStore(TokenStore):
 
                 for result in results:
 
-                    token = OAuthToken(client_id=result[2], client_secret=result[3], grant_token=result[6], refresh_token=result[4], redirect_url=result[8])
+                    token = OAuthToken(client_id=result[2], client_secret=result[3], refresh_token=result[4], grant_token=result[6])
                     token.set_id(result[0])
-                    token.set_expires_in(str(result[7]))
                     token.set_user_mail(result[1])
                     token.set_access_token(result[5])
+                    token.set_expires_in(str(result[7]))
+                    token.set_redirect_url(result[8])
                     tokens.append(token)
 
                 return tokens
@@ -211,7 +218,7 @@ class DBStore(TokenStore):
                 connection.close() if connection is not None else None
 
         except Error as ex:
-            raise SDKException(Constants.TOKEN_STORE, Constants.GET_TOKENS_DB_ERROR, None, ex)
+            raise SDKException(code=Constants.TOKEN_STORE, message=Constants.GET_TOKENS_DB_ERROR, cause=ex)
 
     def delete_tokens(self):
         cursor = None
@@ -231,7 +238,7 @@ class DBStore(TokenStore):
                 cursor.close() if cursor is not None else None
                 connection.close() if connection is not None else None
         except Error as ex:
-            raise SDKException(Constants.TOKEN_STORE, Constants.DELETE_TOKENS_DB_ERROR, Exception=ex)
+            raise SDKException(code=Constants.TOKEN_STORE, message=Constants.DELETE_TOKENS_DB_ERROR, cause=ex)
 
     def get_token_by_id(self, id, token):
         cursor = None
@@ -241,6 +248,7 @@ class DBStore(TokenStore):
                 if isinstance(token, OAuthToken):
 
                     query = "select * from " + self.__table_name + " where id='" + id + "'"
+                    oauthtoken = token
                     cursor = connection.cursor()
                     cursor.execute(query)
                     results = cursor.fetchall()
@@ -248,11 +256,16 @@ class DBStore(TokenStore):
                     for result in results:
                         if result[0] == id:
 
-                            oauthtoken = OAuthToken(client_id=result[2], client_secret=result[3], grant_token=result[6], refresh_token=result[4], redirect_url=result[8])
                             oauthtoken.set_id(result[0])
-                            oauthtoken.set_access_token(result[5])
-                            oauthtoken.set_expires_in(str(result[7]))
                             oauthtoken.set_user_mail(result[1])
+                            oauthtoken.set_client_id(result[2])
+                            oauthtoken.set_client_secret(result[3])
+                            oauthtoken.set_refresh_token(result[4])
+                            oauthtoken.set_access_token(result[5])
+                            oauthtoken.set_grant_token(result[6])
+                            oauthtoken.set_expires_in(str(result[7]))
+                            oauthtoken.set_redirect_url(result[8])
+                            
                             return oauthtoken
 
             except Error as ex:

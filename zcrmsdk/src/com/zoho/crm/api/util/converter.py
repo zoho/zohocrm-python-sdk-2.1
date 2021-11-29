@@ -86,7 +86,6 @@ class Converter(ABC):
         """
         pass
 
-
     def value_checker(self, class_name, member_name, key_details, value, unique_values_map, instance_number):
 
         """
@@ -170,7 +169,10 @@ class Converter(ABC):
 
             raise SDKException(code=Constants.TYPE_ERROR, details=details_jo)
 
-        if Constants.VALUES in key_details and (Constants.PICKLIST not in key_details or (key_details[Constants.PICKLIST] and Initializer.get_initializer().sdk_config.get_pick_list_validation())):
+        if Constants.VALUES in key_details and \
+                (Constants.PICKLIST not in key_details
+                 or (key_details[Constants.PICKLIST]
+                     and Initializer.get_initializer().sdk_config.get_pick_list_validation())):
             values_ja = key_details[Constants.VALUES]
 
             if isinstance(value, Choice):
@@ -235,6 +237,18 @@ class Converter(ABC):
 
         return True
 
+    def module_to_class(self, module_name):
+        class_name = module_name
+
+        if "_" in module_name:
+            class_name = ''
+            module_split = str(module_name).split('_')
+            for each_name in module_split:
+                each_name = each_name.capitalize()
+                class_name += each_name
+
+        return class_name
+
     @classmethod
     def get_encoded_file_name(cls):
 
@@ -254,16 +268,3 @@ class Converter(ABC):
         encoded_string = base64.b64encode(input_bytes)
         encoded_string = str(encoded_string.decode("UTF-8"))
         return encoded_string + '.json'
-
-
-    def module_to_class(self, module_name):
-        class_name = module_name
-
-        if "_" in module_name:
-            class_name = ''
-            module_split = str(module_name).split('_')
-            for each_name in module_split:
-                each_name = each_name.capitalize()
-                class_name += each_name
-
-        return class_name

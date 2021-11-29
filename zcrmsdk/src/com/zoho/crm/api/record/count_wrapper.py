@@ -21,7 +21,7 @@ class CountWrapper(CountHandler):
 		The method to get the count
 
 		Returns:
-			string: A string representing the count
+			int: An int representing the count
 		"""
 
 		return self.__count
@@ -31,11 +31,11 @@ class CountWrapper(CountHandler):
 		The method to set the value to count
 
 		Parameters:
-			count (string) : A string representing the count
+			count (int) : An int representing the count
 		"""
 
-		if count is not None and not isinstance(count, str):
-			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: count EXPECTED TYPE: str', None, None)
+		if count is not None and not isinstance(count, int):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: count EXPECTED TYPE: int', None, None)
 		
 		self.__count = count
 		self.__key_modified['count'] = 1

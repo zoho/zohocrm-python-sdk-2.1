@@ -14,6 +14,7 @@ class LineTax(object):
 		self.__name = None
 		self.__id = None
 		self.__value = None
+		self.__display_name = None
 		self.__key_modified = dict()
 
 	def get_percentage(self):
@@ -111,6 +112,30 @@ class LineTax(object):
 		
 		self.__value = value
 		self.__key_modified['value'] = 1
+
+	def get_display_name(self):
+		"""
+		The method to get the display_name
+
+		Returns:
+			string: A string representing the display_name
+		"""
+
+		return self.__display_name
+
+	def set_display_name(self, display_name):
+		"""
+		The method to set the value to display_name
+
+		Parameters:
+			display_name (string) : A string representing the display_name
+		"""
+
+		if display_name is not None and not isinstance(display_name, str):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: display_name EXPECTED TYPE: str', None, None)
+		
+		self.__display_name = display_name
+		self.__key_modified['display_name'] = 1
 
 	def is_key_modified(self, key):
 		"""

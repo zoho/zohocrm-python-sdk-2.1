@@ -2,7 +2,6 @@ import datetime
 
 
 class Constants(object):
-
     """
     This class uses the SDK constants name reference.
     """
@@ -45,18 +44,9 @@ class Constants(object):
         "DEBUG": "DEBUG",
         "NOTSET": "NOTSET"
     }
-    KEY_VS_INVENTORY_MODULE = {
-        "Quoted_Items": "quotes",
+    INVENTORY_MODULES_ITEMS = ["invoiced_items", "quoted_items", "purchase_items", "ordered_items"]
 
-        "Invoiced_Items": "invoices",
-
-        "Purchase_Items": "purchase_orders",
-
-        "Ordered_Items": "sales_orders"
-
-    }
-
-    DEFAULT_MODULENAME_VS_APINAME = {
+    DEFAULT_MODULE_NAME_VS_API_NAME = {
 
         "leads": "Leads",
 
@@ -178,13 +168,13 @@ class Constants(object):
 
     OBJECT_KEY = "object"
 
-    PHOTO_SUPPORTED_MODULES = ["Leads", "Contacts", "Accounts", "Products", "Vendors", "Deals", "Cases", "Solutions"]
+    PHOTO_SUPPORTED_MODULES = ["leads", "contacts", "accounts", "products", "vendors"]
 
     GIVEN_LENGTH = "given-length"
 
     ZOHO_SDK = "X-ZOHO-SDK"
 
-    SDK_VERSION = "4.0.0-beta-3"
+    SDK_VERSION = "1.0.0"
 
     CONTENT_DISPOSITION = "Content-Disposition"
 
@@ -282,7 +272,7 @@ class Constants(object):
 
     REQUIRED = "required"
 
-    REQUIRED_IN_UPDATE = "required_in_update"
+    REQUIRED_IN_UPDATE = "required-in-update"
 
     PRIMARY = "primary"
 
@@ -314,13 +304,13 @@ class Constants(object):
 
     INVENTORY_LINE_ITEMS = "zcrmsdk.src.com.zoho.crm.api.record.InventoryLineItems"
 
-    PRICINGDETAILS = "zcrmsdk.src.com.zoho.crm.api.record.PricingDetails"
+    PRICING_DETAILS_NAMESPACE = "zcrmsdk.src.com.zoho.crm.api.record.PricingDetails"
 
     COMMENT_NAMESPACE = "zcrmsdk.src.com.zoho.crm.api.record.Comment"
 
     FIELD_FILE_NAMESPACE = "zcrmsdk.src.com.zoho.crm.api.record.FileDetails"
 
-    REMINDAT_NAMESPACE = "zcrmsdk.src.com.zoho.crm.api.record.RemindAt"
+    REMIND_AT_NAMESPACE = "zcrmsdk.src.com.zoho.crm.api.record.RemindAt"
 
     CONSENT_NAMESPACE = "zcrmsdk.src.com.zoho.crm.api.record.Consent"
 
@@ -338,7 +328,7 @@ class Constants(object):
 
     TERRITORY_NAMESPACE = "zcrmsdk.src.com.zoho.crm.api.record.Territory"
 
-    IMAGEUPLOAD_NAMESPACE = "zcrmsdk.src.com.zoho.crm.api.record.ImageUpload"
+    IMAGE_UPLOAD_NAMESPACE = "zcrmsdk.src.com.zoho.crm.api.record.ImageUpload"
 
     ATTACHMENTS_NAMESPACE = "zcrmsdk.src.com.zoho.crm.api.attachments.Attachment"
 
@@ -418,13 +408,17 @@ class Constants(object):
 
     INTEGER_NAMESPACE = 'Integer'
 
-    LONG_NAMESPACE = 'String'
+    LONG_NAMESPACE = 'Long'
 
     DOUBLE_NAMESPACE = 'Float'
 
     DATE_NAMESPACE = 'Date'
 
     DATETIME_NAMESPACE = 'DateTime'
+
+    DISCOUNT = "DISCOUNT"
+
+    LINEITEM_PRODUCT = "zcrmsdk.src.com.zoho.crm.api.record.LineItemProduct"
 
     FILE_NAMESPACE = "zcrmsdk.src.com.zoho.crm.api.util.StreamWrapper"
 
@@ -586,7 +580,7 @@ class Constants(object):
 
     REQUEST_CATEGORY_ACTION = "ACTION"
 
-    SKIP_MANDATORY = "skip_mandatory"
+    SKIP_MANDATORY = "skip-mandatory"
 
     FORMULA = "formula"
 
@@ -619,6 +613,8 @@ class Constants(object):
     AUTO_REFRESH_FIELDS_ERROR_MESSAGE = "auto_refresh_fields MUST NOT be None."
 
     HEADER_NONE_ERROR = "NONE HEADER ERROR"
+
+    PRODUCT_NAME = "Product_Name"
 
     HEADER_INSTANCE_NONE_ERROR = "Header Instance MUST NOT be None"
 
@@ -687,3 +683,17 @@ class Constants(object):
     TOKEN_ERROR_MESSAGE = "token must be instance of Token."
 
     STORE_ERROR_MESSAGE = "store must be instance of Store."
+
+    COUNT = "count"
+
+    OWNER_LOOKUP = "ownerlookup"
+
+    TOKEN_FILE = "sdk_tokens.txt"
+
+    LOG_FILE_NAME = "sdk_logs.log"
+
+    SKIP_MODULES = ["deals"]
+
+    PYTHON = "python_"
+
+    OAUTH_MANDATORY_KEYS = ["grant_token", "refresh_token", "id", "access_token"]

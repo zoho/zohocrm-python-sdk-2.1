@@ -1,5 +1,6 @@
 from .private import Private
 from .related_details import RelatedDetails
+from .maps import Maps
 from .multi_user_lookup import MultiUserLookup
 from .crypt import Crypt
 from .module import Module
@@ -15,6 +16,7 @@ from .field import Field
 from .association_details import AssociationDetails
 from .unique import Unique
 from .history_tracking import HistoryTracking
+from .multi_module_lookup import MultiModuleLookup
 from .response_wrapper import ResponseWrapper
 from .formula import Formula
 from .currency import Currency

@@ -33,7 +33,7 @@ class OAuthToken(Token):
     logger = logging.getLogger('SDKLogger')
     lock = threading.Lock()
 
-    def __init__(self, client_id, client_secret, grant_token=None, refresh_token=None, redirect_url=None, id=None):
+    def __init__(self, client_id=None, client_secret=None, grant_token=None, refresh_token=None, redirect_url=None, id=None, access_token=None):
 
         """
         Creates an OAuthToken class instance with the specified parameters.
@@ -49,44 +49,48 @@ class OAuthToken(Token):
 
         error = {}
 
-        if not isinstance(client_id, str):
-            error[Constants.FIELD] = Constants.CLIENT_ID
-            error[Constants.EXPECTED_TYPE] = Constants.STRING
-            error[Constants.CLASS] = OAuthToken.__name__
-            raise SDKException(code=Constants.TOKEN_ERROR, details=error)
+        if grant_token is None and refresh_token is None and id is None and access_token is None:
+            raise SDKException(code=Constants.MANDATORY_VALUE_ERROR, message=Constants.MANDATORY_KEY_ERROR, details=Constants.OAUTH_MANDATORY_KEYS)
 
-        if not isinstance(client_secret, str):
-            error[Constants.FIELD] = Constants.CLIENT_SECRET
-            error[Constants.EXPECTED_TYPE] = Constants.STRING
-            error[Constants.CLASS] = OAuthToken.__name__
-            raise SDKException(code=Constants.TOKEN_ERROR, details=error)
+        if id is None and access_token is None:
+            if not isinstance(client_id, str):
+                error[Constants.FIELD] = Constants.CLIENT_ID
+                error[Constants.EXPECTED_TYPE] = Constants.STRING
+                error[Constants.CLASS] = OAuthToken.__name__
+                raise SDKException(code=Constants.TOKEN_ERROR, details=error)
 
-        if grant_token is None and refresh_token is None:
-            error[Constants.FIELD] = Constants.TYPE
-            error[Constants.EXPECTED_TYPE] = Constants.EXPECTED_TOKEN_TYPES
-            error[Constants.CLASS] = OAuthToken.__name__
-            raise SDKException(code=Constants.INPUT_ERROR, details=error)
+            if not isinstance(client_secret, str):
+                error[Constants.FIELD] = Constants.CLIENT_SECRET
+                error[Constants.EXPECTED_TYPE] = Constants.STRING
+                error[Constants.CLASS] = OAuthToken.__name__
+                raise SDKException(code=Constants.TOKEN_ERROR, details=error)
 
-        if grant_token is not None and not isinstance(grant_token, str):
-            error[Constants.FIELD] = Constants.GRANT_TOKEN
-            error[Constants.EXPECTED_TYPE] = Constants.STRING
-            error[Constants.CLASS] = OAuthToken.__name__
-            raise SDKException(code=Constants.TOKEN_ERROR, details=error)
+            if grant_token is not None and not isinstance(grant_token, str):
+                error[Constants.FIELD] = Constants.GRANT_TOKEN
+                error[Constants.EXPECTED_TYPE] = Constants.STRING
+                error[Constants.CLASS] = OAuthToken.__name__
+                raise SDKException(code=Constants.TOKEN_ERROR, details=error)
 
-        if refresh_token is not None and not isinstance(refresh_token, str):
-            error[Constants.FIELD] = Constants.REFRESH_TOKEN
-            error[Constants.EXPECTED_TYPE] = Constants.STRING
-            error[Constants.CLASS] = OAuthToken.__name__
-            raise SDKException(code=Constants.TOKEN_ERROR, details=error)
+            if refresh_token is not None and not isinstance(refresh_token, str):
+                error[Constants.FIELD] = Constants.REFRESH_TOKEN
+                error[Constants.EXPECTED_TYPE] = Constants.STRING
+                error[Constants.CLASS] = OAuthToken.__name__
+                raise SDKException(code=Constants.TOKEN_ERROR, details=error)
 
-        if redirect_url is not None and not isinstance(redirect_url, str):
-            error[Constants.FIELD] = Constants.REDIRECT_URI
-            error[Constants.EXPECTED_TYPE] = Constants.STRING
-            error[Constants.CLASS] = OAuthToken.__name__
-            raise SDKException(code=Constants.TOKEN_ERROR, details=error)
+            if redirect_url is not None and not isinstance(redirect_url, str):
+                error[Constants.FIELD] = Constants.REDIRECT_URI
+                error[Constants.EXPECTED_TYPE] = Constants.STRING
+                error[Constants.CLASS] = OAuthToken.__name__
+                raise SDKException(code=Constants.TOKEN_ERROR, details=error)
 
         if id is not None and not isinstance(id, str):
             error[Constants.FIELD] = Constants.ID
+            error[Constants.EXPECTED_TYPE] = Constants.STRING
+            error[Constants.CLASS] = OAuthToken.__name__
+            raise SDKException(code=Constants.TOKEN_ERROR, details=error)
+
+        if access_token is not None and not isinstance(access_token, str):
+            error[Constants.FIELD] = Constants.ACCESS_TOKEN
             error[Constants.EXPECTED_TYPE] = Constants.STRING
             error[Constants.CLASS] = OAuthToken.__name__
             raise SDKException(code=Constants.TOKEN_ERROR, details=error)
@@ -97,7 +101,7 @@ class OAuthToken(Token):
         self.__grant_token = grant_token
         self.__refresh_token = refresh_token
         self.__id = id
-        self.__access_token = None
+        self.__access_token = access_token
         self.__expires_in = None
         self.__user_mail = None
 
@@ -190,12 +194,26 @@ class OAuthToken(Token):
 
         return self.__user_mail
 
+    def set_grant_token(self, grant_token):
+        """
+        This is a setter method to set __grant_token.
+
+        """
+        self.__grant_token = grant_token
+
     def set_refresh_token(self, refresh_token):
         """
         This is a setter method to set __refresh_token.
 
         """
         self.__refresh_token = refresh_token
+    
+    def set_redirect_url(self, redirect_url):
+        """
+        This is a setter method to set __redirect_url.
+
+        """
+        self.__redirect_url = redirect_url
 
     def set_access_token(self, access_token):
         """
@@ -204,6 +222,22 @@ class OAuthToken(Token):
         """
 
         self.__access_token = access_token
+
+    def set_client_id(self, client_id):
+        """
+        This is a setter method to set __client_id.
+
+        """
+
+        self.__client_id = client_id
+    
+    def set_client_secret(self, client_secret):
+        """
+        This is a setter method to set __client_secret.
+
+        """
+
+        self.__client_secret = client_secret
 
     def set_id(self, id):
         """
@@ -236,16 +270,19 @@ class OAuthToken(Token):
             store = initializer.store
             user = initializer.user
 
-            if self.__id is not None:
-                oauth_token = initializer.store.get_token_by_id(self.__id, self)
+            if self.__access_token is None:
+                if self.__id is not None:
+                    oauth_token = initializer.store.get_token_by_id(self.__id, self)
+                else:
+                    oauth_token = initializer.store.get_token(user, self)
             else:
-                oauth_token = initializer.store.get_token(user, self)
+                oauth_token = self
 
             if oauth_token is None:
                 token = self.generate_access_token(user, store).get_access_token() if (
                             self.__refresh_token is None) else self.refresh_access_token(user, store).get_access_token()
 
-            elif int(oauth_token.get_expires_in()) - int(time.time() * 1000) < 5000:
+            elif oauth_token.get_expires_in() is not None and int(oauth_token.get_expires_in()) - int(time.time() * 1000) < 5000:
                 OAuthToken.logger.info(Constants.REFRESH_TOKEN_MESSAGE)
                 token = oauth_token.refresh_access_token(user, store).get_access_token()
 
@@ -261,14 +298,14 @@ class OAuthToken(Token):
             body = {
                 Constants.REFRESH_TOKEN: self.__refresh_token,
                 Constants.CLIENT_ID: self.__client_id,
-                Constants.REDIRECT_URI: self.__redirect_url if self.__redirect_url is not None else None,
                 Constants.CLIENT_SECRET: self.__client_secret,
                 Constants.GRANT_TYPE: Constants.REFRESH_TOKEN
             }
 
             response = requests.post(url, data=body, params=None, headers=None, allow_redirects=False).json()
             self.parse_response(response)
-            self.generate_id()
+            if self.__id is None:
+                self.generate_id()
             store.save_token(user, self)
 
         except SDKException as ex:
@@ -284,12 +321,13 @@ class OAuthToken(Token):
             url = Initializer.get_initializer().environment.accounts_url
 
             body = {
-                Constants.GRANT_TYPE: Constants.GRANT_TYPE_AUTH_CODE,
                 Constants.CLIENT_ID: self.__client_id,
                 Constants.CLIENT_SECRET: self.__client_secret,
                 Constants.REDIRECT_URI: self.__redirect_url if self.__redirect_url is not None else None,
+                Constants.GRANT_TYPE: Constants.GRANT_TYPE_AUTH_CODE,
                 Constants.CODE: self.__grant_token
             }
+            
             headers = dict()
             headers[Constants.USER_AGENT_KEY] = Constants.USER_AGENT
             response = requests.post(url, data=body, params=None, headers=headers, allow_redirects=True).json()
@@ -328,7 +366,7 @@ class OAuthToken(Token):
         id = ""
         email = str(Initializer.get_initializer().user.get_email())
         environment = str(Initializer.get_initializer().environment.name)
-        id += "python_" + email[0:email.find(Constants.AT)] + Constants.UNDERSCORE
+        id += Constants.PYTHON + email[0:email.find(Constants.AT)] + Constants.UNDERSCORE
         id += environment + Constants.UNDERSCORE + self.__refresh_token[len(self.__refresh_token)-4:]
         self.__id = id
         return self.__id

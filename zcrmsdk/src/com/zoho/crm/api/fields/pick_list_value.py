@@ -11,13 +11,16 @@ class PickListValue(object):
 		"""Creates an instance of PickListValue"""
 
 		self.__display_value = None
+		self.__probability = None
+		self.__forecast_category = None
+		self.__actual_value = None
+		self.__id = None
+		self.__forecast_type = None
 		self.__sequence_number = None
 		self.__expected_data_type = None
 		self.__maps = None
-		self.__actual_value = None
 		self.__sys_ref_name = None
 		self.__type = None
-		self.__id = None
 		self.__key_modified = dict()
 
 	def get_display_value(self):
@@ -43,6 +46,126 @@ class PickListValue(object):
 		
 		self.__display_value = display_value
 		self.__key_modified['display_value'] = 1
+
+	def get_probability(self):
+		"""
+		The method to get the probability
+
+		Returns:
+			int: An int representing the probability
+		"""
+
+		return self.__probability
+
+	def set_probability(self, probability):
+		"""
+		The method to set the value to probability
+
+		Parameters:
+			probability (int) : An int representing the probability
+		"""
+
+		if probability is not None and not isinstance(probability, int):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: probability EXPECTED TYPE: int', None, None)
+		
+		self.__probability = probability
+		self.__key_modified['probability'] = 1
+
+	def get_forecast_category(self):
+		"""
+		The method to get the forecast_category
+
+		Returns:
+			int: An int representing the forecast_category
+		"""
+
+		return self.__forecast_category
+
+	def set_forecast_category(self, forecast_category):
+		"""
+		The method to set the value to forecast_category
+
+		Parameters:
+			forecast_category (int) : An int representing the forecast_category
+		"""
+
+		if forecast_category is not None and not isinstance(forecast_category, int):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: forecast_category EXPECTED TYPE: int', None, None)
+		
+		self.__forecast_category = forecast_category
+		self.__key_modified['forecast_category'] = 1
+
+	def get_actual_value(self):
+		"""
+		The method to get the actual_value
+
+		Returns:
+			string: A string representing the actual_value
+		"""
+
+		return self.__actual_value
+
+	def set_actual_value(self, actual_value):
+		"""
+		The method to set the value to actual_value
+
+		Parameters:
+			actual_value (string) : A string representing the actual_value
+		"""
+
+		if actual_value is not None and not isinstance(actual_value, str):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: actual_value EXPECTED TYPE: str', None, None)
+		
+		self.__actual_value = actual_value
+		self.__key_modified['actual_value'] = 1
+
+	def get_id(self):
+		"""
+		The method to get the id
+
+		Returns:
+			int: An int representing the id
+		"""
+
+		return self.__id
+
+	def set_id(self, id):
+		"""
+		The method to set the value to id
+
+		Parameters:
+			id (int) : An int representing the id
+		"""
+
+		if id is not None and not isinstance(id, int):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: id EXPECTED TYPE: int', None, None)
+		
+		self.__id = id
+		self.__key_modified['id'] = 1
+
+	def get_forecast_type(self):
+		"""
+		The method to get the forecast_type
+
+		Returns:
+			string: A string representing the forecast_type
+		"""
+
+		return self.__forecast_type
+
+	def set_forecast_type(self, forecast_type):
+		"""
+		The method to set the value to forecast_type
+
+		Parameters:
+			forecast_type (string) : A string representing the forecast_type
+		"""
+
+		if forecast_type is not None and not isinstance(forecast_type, str):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: forecast_type EXPECTED TYPE: str', None, None)
+		
+		self.__forecast_type = forecast_type
+		self.__key_modified['forecast_type'] = 1
 
 	def get_sequence_number(self):
 		"""
@@ -116,30 +239,6 @@ class PickListValue(object):
 		self.__maps = maps
 		self.__key_modified['maps'] = 1
 
-	def get_actual_value(self):
-		"""
-		The method to get the actual_value
-
-		Returns:
-			string: A string representing the actual_value
-		"""
-
-		return self.__actual_value
-
-	def set_actual_value(self, actual_value):
-		"""
-		The method to set the value to actual_value
-
-		Parameters:
-			actual_value (string) : A string representing the actual_value
-		"""
-
-		if actual_value is not None and not isinstance(actual_value, str):
-			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: actual_value EXPECTED TYPE: str', None, None)
-		
-		self.__actual_value = actual_value
-		self.__key_modified['actual_value'] = 1
-
 	def get_sys_ref_name(self):
 		"""
 		The method to get the sys_ref_name
@@ -187,30 +286,6 @@ class PickListValue(object):
 		
 		self.__type = type
 		self.__key_modified['type'] = 1
-
-	def get_id(self):
-		"""
-		The method to get the id
-
-		Returns:
-			int: An int representing the id
-		"""
-
-		return self.__id
-
-	def set_id(self, id):
-		"""
-		The method to set the value to id
-
-		Parameters:
-			id (int) : An int representing the id
-		"""
-
-		if id is not None and not isinstance(id, int):
-			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: id EXPECTED TYPE: int', None, None)
-		
-		self.__id = id
-		self.__key_modified['id'] = 1
 
 	def is_key_modified(self, key):
 		"""

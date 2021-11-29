@@ -16,6 +16,7 @@ class Note(object):
 		self.__created_time = None
 		self.__parent_id = None
 		self.__editable = None
+		self.__sharing_permission = None
 		self.__se_module = None
 		self.__is_shared_to_client = None
 		self.__modified_by = None
@@ -185,6 +186,30 @@ class Note(object):
 		
 		self.__editable = editable
 		self.__key_modified['$editable'] = 1
+
+	def get_sharing_permission(self):
+		"""
+		The method to get the sharing_permission
+
+		Returns:
+			string: A string representing the sharing_permission
+		"""
+
+		return self.__sharing_permission
+
+	def set_sharing_permission(self, sharing_permission):
+		"""
+		The method to set the value to sharing_permission
+
+		Parameters:
+			sharing_permission (string) : A string representing the sharing_permission
+		"""
+
+		if sharing_permission is not None and not isinstance(sharing_permission, str):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: sharing_permission EXPECTED TYPE: str', None, None)
+		
+		self.__sharing_permission = sharing_permission
+		self.__key_modified['$sharing_permission'] = 1
 
 	def get_se_module(self):
 		"""

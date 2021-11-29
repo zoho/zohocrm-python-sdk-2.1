@@ -30,63 +30,6 @@ class FormDataConverter(Converter):
         self.unique_dict = {}
         self.common_api_handler = common_api_handler
 
-    def form_request(self, request_instance, pack, instance_number, class_member_detail):
-
-        path_split = str(pack).rpartition(".")
-        class_name = self.module_to_class(path_split[-1])
-        pack = path_split[0] + "." + class_name
-
-        try:
-            from zcrmsdk.src.com.zoho.crm.api.initializer import Initializer
-        except Exception:
-            from ..initializer import Initializer
-
-        class_detail = dict(Initializer.json_details[str(pack)])
-        request = dict()
-
-        for member_name, member_detail in class_detail.items():
-            modification = None
-
-            if (Constants.READ_ONLY in member_detail and bool(
-                    member_detail[Constants.READ_ONLY])) or Constants.NAME not in member_detail:
-                continue
-
-            try:
-                modification = getattr(request_instance, Constants.IS_KEY_MODIFIED)(member_name)
-            except Exception as e:
-                raise SDKException(code=Constants.EXCEPTION_IS_KEY_MODIFIED, cause=e)
-
-            if (modification is None or modification == 0) and Constants.REQUIRED in member_detail and bool(
-                    member_detail[Constants.REQUIRED]):
-                raise SDKException(Constants.MANDATORY_VALUE_ERROR,
-                                   Constants.MANDATORY_KEY_ERROR + member_name)
-
-            field_value = getattr(request_instance, self.construct_private_member(class_name=class_name, member_name=member_name))
-
-            if modification is not None and modification != 0 and self.value_checker(
-                    class_name=class_name,
-                    member_name=member_name,
-                    key_details=member_detail,
-                    value=field_value,
-                    unique_values_map=self.unique_dict,
-                    instance_number=instance_number) is True:
-                key_name = member_detail.get(Constants.NAME)
-                data_type = member_detail.get(Constants.TYPE)
-
-                if data_type == Constants.LIST_NAMESPACE:
-                    request[key_name] = self.set_json_array(field_value, member_detail)
-
-                elif data_type == Constants.MAP_NAMESPACE:
-                    request[key_name] = self.set_json_object(field_value, member_detail)
-
-                elif Constants.STRUCTURE_NAME in member_detail:
-                    request[key_name] = self.form_request(field_value, member_detail.get(Constants.STRUCTURE_NAME), 0, member_detail)
-
-                else:
-                    request[key_name] = field_value
-
-            return request
-
     def append_to_request(self, request_base, request_object):
         form_data_request_body = []
         self.add_file_body(request_object, form_data_request_body)
@@ -108,6 +51,80 @@ class FormDataConverter(Converter):
                 entry = (key_name, key_value)
                 request_body.append(entry)
 
+    def form_request(self, request_instance, pack, instance_number, class_member_detail):
+        path_split = str(pack).rpartition(".")
+        class_name = self.module_to_class(path_split[-1])
+        pack = path_split[0] + "." + class_name
+
+        try:
+            from zcrmsdk.src.com.zoho.crm.api.initializer import Initializer
+        except Exception:
+            from ..initializer import Initializer
+
+        class_detail = dict(Initializer.json_details[str(pack)])
+        request = dict()
+
+        if Constants.INTERFACE in class_detail and class_detail[Constants.INTERFACE] is not None:
+            request_object_class_name = request_instance.__class__.__module__
+            request_object_class_name = str(request_object_class_name)
+            path_split = str(request_object_class_name).rpartition(".")
+            request_class_name = self.module_to_class(path_split[-1])
+            request_object_class_name = path_split[0] + "." + request_class_name
+            classes = class_detail[Constants.CLASSES]
+
+            for class_name in classes:
+                class_name_interface_lower = str(class_name).lower()
+                request_class_path_lower = request_object_class_name.lower()
+                if class_name_interface_lower == request_class_path_lower:
+                    class_detail = dict(Initializer.json_details[str(class_name)])
+                    class_name = str(class_name).rpartition(".")
+                    class_name = self.module_to_class(class_name[-1])
+                    break
+
+        for member_name, member_detail in class_detail.items():
+            modification = None
+
+            if (Constants.READ_ONLY in member_detail and bool(
+                    member_detail[Constants.READ_ONLY])) or Constants.NAME not in member_detail:
+                continue
+
+            try:
+                modification = getattr(request_instance, Constants.IS_KEY_MODIFIED)(member_name)
+            except Exception as e:
+                raise SDKException(code=Constants.EXCEPTION_IS_KEY_MODIFIED, cause=e)
+
+            if (modification is None or modification == 0) and Constants.REQUIRED in member_detail and bool(
+                    member_detail[Constants.REQUIRED]):
+                raise SDKException(Constants.MANDATORY_VALUE_ERROR,
+                                   Constants.MANDATORY_KEY_ERROR + member_name)
+
+            field_value = getattr(request_instance, self.construct_private_member(class_name=class_name, member_name=member_name))
+
+            if modification is not None and modification != 0 and field_value is not None and  self.value_checker(
+                    class_name=class_name,
+                    member_name=member_name,
+                    key_details=member_detail,
+                    value=field_value,
+                    unique_values_map=self.unique_dict,
+                    instance_number=instance_number) is True:
+                key_name = member_detail.get(Constants.NAME)
+                data_type = member_detail.get(Constants.TYPE)
+
+                if data_type == Constants.LIST_NAMESPACE:
+                    request[key_name] = self.set_json_array(field_value, member_detail)
+
+                elif data_type == Constants.MAP_NAMESPACE:
+                    request[key_name] = self.set_json_object(field_value, member_detail)
+
+                elif Constants.STRUCTURE_NAME in member_detail:
+                    request[key_name] = \
+                        self.form_request(field_value, member_detail.get(Constants.STRUCTURE_NAME), 0, member_detail)
+
+                else:
+                    request[key_name] = field_value
+
+            return request
+
     def set_json_object(self, field_value, member_detail):
         json_object = {}
         request_object = dict(field_value)
@@ -125,7 +142,8 @@ class FormDataConverter(Converter):
 
                 if key_name in request_object and request_object[key_name] is not None:
                     if Constants.STRUCTURE_NAME in key_detail:
-                        key_value = self.form_request(field_value[key_name], key_detail[Constants.STRUCTURE_NAME], 0, member_detail)
+                        key_value = self.form_request(field_value[key_name],
+                                                      key_detail[Constants.STRUCTURE_NAME], 0, member_detail)
 
                     else:
                         key_value = self.redirector_for_object_to_json(field_value[key_name])
@@ -135,7 +153,6 @@ class FormDataConverter(Converter):
         return json_object
 
     def set_json_array(self, field_value, member_detail):
-
         json_array = []
         request_objects = list(field_value)
 

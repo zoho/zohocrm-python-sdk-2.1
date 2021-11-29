@@ -14,6 +14,7 @@ class CustomView(object):
 		self.__name = None
 		self.__system_name = None
 		self.__display_value = None
+		self.__created_time = None
 		self.__access_type = None
 		self.__category = None
 		self.__sort_by = None
@@ -125,6 +126,32 @@ class CustomView(object):
 		
 		self.__display_value = display_value
 		self.__key_modified['display_value'] = 1
+
+	def get_created_time(self):
+		"""
+		The method to get the created_time
+
+		Returns:
+			datetime: An instance of datetime
+		"""
+
+		return self.__created_time
+
+	def set_created_time(self, created_time):
+		"""
+		The method to set the value to created_time
+
+		Parameters:
+			created_time (datetime) : An instance of datetime
+		"""
+
+		from datetime import datetime
+
+		if created_time is not None and not isinstance(created_time, datetime):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: created_time EXPECTED TYPE: datetime', None, None)
+		
+		self.__created_time = created_time
+		self.__key_modified['created_time'] = 1
 
 	def get_access_type(self):
 		"""

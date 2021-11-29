@@ -51,7 +51,7 @@ class Initializer(object):
     LOCAL.init = None
 
     @staticmethod
-    def initialize(user, environment, token, store, sdk_config, resource_path, logger=None, proxy=None):
+    def initialize(user, environment, token, store=None, sdk_config=None, resource_path=None, logger=None, proxy=None):
 
         """
         The method to initialize the SDK.
@@ -84,26 +84,37 @@ class Initializer(object):
 
                 raise SDKException(Constants.INITIALIZATION_ERROR, Constants.TOKEN_ERROR_MESSAGE, details=error)
 
-            if not isinstance(store, TokenStore):
+            if store is not None and not isinstance(store, TokenStore):
                 error = {Constants.FIELD: Constants.STORE, Constants.EXPECTED_TYPE: TokenStore.__module__}
 
                 raise SDKException(Constants.INITIALIZATION_ERROR, Constants.STORE_ERROR_MESSAGE, details=error)
 
-            if not isinstance(sdk_config, SDKConfig):
+            if sdk_config is not None and not isinstance(sdk_config, SDKConfig):
                 error = {Constants.FIELD: Constants.SDK_CONFIG, Constants.EXPECTED_TYPE: SDKConfig.__module__}
 
                 raise SDKException(Constants.INITIALIZATION_ERROR, Constants.SDK_CONFIG_ERROR_MESSAGE, details=error)
-
-            if resource_path is None or len(resource_path) == 0:
-                raise SDKException(Constants.INITIALIZATION_ERROR, Constants.RESOURCE_PATH_ERROR_MESSAGE)
 
             if proxy is not None and not isinstance(proxy, RequestProxy):
                 error = {Constants.FIELD: Constants.USER_PROXY, Constants.EXPECTED_TYPE: RequestProxy.__module__}
 
                 raise SDKException(Constants.INITIALIZATION_ERROR, Constants.REQUEST_PROXY_ERROR_MESSAGE, details=error)
 
+            if store is None:
+                try:
+                    from zcrmsdk.src.com.zoho.api.authenticator.store.file_store import FileStore
+                except Exception:
+                    from ...api.authenticator.store.file_store import FileStore
+
+                store = FileStore(os.path.join(os.getcwd(), Constants.TOKEN_FILE))
+            
+            if sdk_config is None:
+                sdk_config = SDKConfig()
+            
+            if resource_path is None or len(resource_path) == 0:
+                resource_path = os.getcwd()
+            
             if logger is None:
-                logger = Logger(Logger.Levels.INFO, os.path.join(os.getcwd(), Constants.LOGFILE_NAME))
+                logger = Logger(Logger.Levels.INFO, os.path.join(os.getcwd(), Constants.LOG_FILE_NAME))
 
             SDKLogger.initialize(logger)
 
@@ -112,9 +123,9 @@ class Initializer(object):
 
             try:
                 json_details_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', Constants.JSON_DETAILS_FILE_PATH)
-
-                with open(json_details_path, mode='r') as JSON:
-                    Initializer.json_details = json.load(JSON)
+                if Initializer.json_details is None or len(Initializer.json_details)==0:
+                    with open(json_details_path, mode='r') as JSON:
+                        Initializer.json_details = json.load(JSON)
             except Exception as e:
                 raise SDKException(code=Constants.JSON_DETAILS_ERROR, cause=e)
 

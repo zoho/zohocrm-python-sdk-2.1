@@ -96,7 +96,8 @@ class DataTypeConverter(object):
         """
 
         DataTypeConverter.init()
-        return DataTypeConverter.pre_converter_map[data_type](obj)
+        if data_type in DataTypeConverter.pre_converter_map:
+            return DataTypeConverter.pre_converter_map[data_type](obj)
 
     @staticmethod
     def post_convert(obj, data_type):
@@ -109,4 +110,5 @@ class DataTypeConverter(object):
         """
 
         DataTypeConverter.init()
-        return DataTypeConverter.post_converter_map[data_type](obj)
+        if data_type in DataTypeConverter.post_converter_map:
+            return DataTypeConverter.post_converter_map[data_type](obj)
