@@ -1,3 +1,5 @@
 include *.py
 include *.json
+include LICENSE
 recursive-include zcrmsdk *
+recursive-exclude zcrmsdk *.pyc

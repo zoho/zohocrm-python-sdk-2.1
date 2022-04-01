@@ -4,3 +4,4 @@ from .data_center import DataCenter
 from .eu_data_center import EUDataCenter
 from .in_data_center import INDataCenter
 from .us_data_center import USDataCenter
+from .jp_data_center import JPDataCenter
