@@ -11,7 +11,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='zohocrmsdk2_1',
-    version='1.0.0',
+    version='1.1.0',
     description='Zoho CRM SDK for ZOHO CRM 2.1 APIs',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -22,6 +22,7 @@ setup(
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
+        'License :: OSI Approved :: Apache Software License',
         'Topic :: Software Development :: Build Tools',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
@@ -38,5 +39,6 @@ setup(
     ],
     keywords=['development', 'zoho', 'crm', 'api', 'zcrmsdk', 'sdk', 'zcrm','zohocrmsdk2_1'],
     packages=find_packages(),
-    include_package_data=True
+    include_package_data=True,
+    license='Apache Software License, Version 2.0, http://www.apache.org/licenses/LICENSE-2.0',
 )
