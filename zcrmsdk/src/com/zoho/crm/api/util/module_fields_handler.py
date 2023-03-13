@@ -78,7 +78,7 @@ class ModuleFieldsHandler(object):
                 raise sdk_exception
 
     @staticmethod
-    def __delete_fields(module):
+    def delete_fields(module):
         """
         The method to delete fields of the given module from the current user's fields JSON file.
 
@@ -90,16 +90,22 @@ class ModuleFieldsHandler(object):
         """
 
         try:
+            if module is None:
+                raise Exception("module should not be null")
+
             record_field_details_path = os.path.join(ModuleFieldsHandler.__get_directory(), Converter.get_encoded_file_name())
             if os.path.exists(record_field_details_path):
                 record_field_details_json = Initializer.get_json(record_field_details_path)
-                Utility.delete_fields(record_field_details_json, module)
-                with open(record_field_details_path, mode="w") as file:
-                    json.dump(record_field_details_json, file)
-                    file.flush()
-                    file.close()
+                if module in record_field_details_json:
+                    Utility.delete_fields(record_field_details_json, module)
+                    with open(record_field_details_path, mode="w") as file:
+                        json.dump(record_field_details_json, file)
+                        file.flush()
+                        file.close()
+
         except Exception as e:
             sdk_exception = SDKException(cause=e)
+            ModuleFieldsHandler.logger.info(Constants.DELETE_MODULE_FROM_FIELDFILE_ERROR + sdk_exception.__str__())
             raise sdk_exception
 
     @staticmethod
@@ -116,14 +122,17 @@ class ModuleFieldsHandler(object):
 
         with ModuleFieldsHandler.lock:
             try:
-                ModuleFieldsHandler.__delete_fields(module)
+                if module is None:
+                    raise Exception("module should not be null")
+
+                ModuleFieldsHandler.delete_fields(module)
                 Utility.get_fields_info(module)
             except SDKException as ex:
                 ModuleFieldsHandler.logger.info(Constants.REFRESH_SINGLE_MODULE_FIELDS_ERROR + module + ex.__str__())
                 raise ex
             except Exception as e:
                 sdk_exception = SDKException(cause=e)
-                ModuleFieldsHandler.logger.info(Constants.REFRESH_SINGLE_MODULE_FIELDS_ERROR + module + sdk_exception.__str__())
+                ModuleFieldsHandler.logger.info(Constants.REFRESH_SINGLE_MODULE_FIELDS_ERROR + sdk_exception.__str__())
                 raise sdk_exception
 
     @staticmethod

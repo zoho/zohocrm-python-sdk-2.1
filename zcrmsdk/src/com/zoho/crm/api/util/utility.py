@@ -148,13 +148,13 @@ class Utility(object):
 
                 if not os.path.exists(resources_path):
                     os.makedirs(resources_path)
+                if module_api_name is not None:
+                    module_api_name = Utility.verify_module_api_name(module_api_name)
 
-                module_api_name = Utility.verify_module_api_name(module_api_name)
+                    Utility.set_handler_api_path(module_api_name, handler_instance)
 
-                Utility.set_handler_api_path(module_api_name, handler_instance)
-
-                if handler_instance is not None and handler_instance.get_module_api_name() is None and module_api_name.lower() not in Constants.SKIP_MODULES:
-                    return
+                    if handler_instance is not None and handler_instance.get_module_api_name() is None and module_api_name.lower() not in Constants.SKIP_MODULES:
+                        return
 
                 record_field_details_path = Utility.get_file_name()
 
