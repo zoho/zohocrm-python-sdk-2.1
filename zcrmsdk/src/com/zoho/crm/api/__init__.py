@@ -44,3 +44,4 @@ from . import send_mail
 from . import assignment_rules
 from . import pipeline
 from . import wizards
+from . import cancel_meetings

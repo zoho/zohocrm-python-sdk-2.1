@@ -1,6 +1,7 @@
 from .image_upload import ImageUpload
 from .criteria import Criteria
 from .file_details import FileDetails
+from .apply_feature_execution import ApplyFeatureExecution
 from .record_operations import RecordOperations, GetRecordParam, GetRecordHeader, UpdateRecordHeader, DeleteRecordParam, DeleteRecordHeader, GetRecordsParam, GetRecordsHeader, CreateRecordsHeader, UpdateRecordsHeader, DeleteRecordsParam, DeleteRecordsHeader, UpsertRecordsHeader, GetDeletedRecordsParam, GetDeletedRecordsHeader, SearchRecordsParam, SearchRecordsHeader, GetMassUpdateStatusParam, RecordCountParam, GetRecordUsingExternalIDParam, GetRecordUsingExternalIDHeader, UpdateRecordUsingExternalIDHeader, DeleteRecordUsingExternalIDParam, DeleteRecordUsingExternalIDHeader
 from .count_wrapper import CountWrapper
 from .mass_update_response_wrapper import MassUpdateResponseWrapper

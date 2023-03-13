@@ -12,6 +12,7 @@ class BodyWrapper(object):
 
 		self.__data = None
 		self.__trigger = None
+		self.__apply_feature_execution = None
 		self.__process = None
 		self.__duplicate_check_fields = None
 		self.__wf_trigger = None
@@ -65,6 +66,30 @@ class BodyWrapper(object):
 		
 		self.__trigger = trigger
 		self.__key_modified['trigger'] = 1
+
+	def get_apply_feature_execution(self):
+		"""
+		The method to get the apply_feature_execution
+
+		Returns:
+			list: An instance of list
+		"""
+
+		return self.__apply_feature_execution
+
+	def set_apply_feature_execution(self, apply_feature_execution):
+		"""
+		The method to set the value to apply_feature_execution
+
+		Parameters:
+			apply_feature_execution (list) : An instance of list
+		"""
+
+		if apply_feature_execution is not None and not isinstance(apply_feature_execution, list):
+			raise SDKException(Constants.DATA_TYPE_ERROR, 'KEY: apply_feature_execution EXPECTED TYPE: list', None, None)
+		
+		self.__apply_feature_execution = apply_feature_execution
+		self.__key_modified['apply_feature_execution'] = 1
 
 	def get_process(self):
 		"""

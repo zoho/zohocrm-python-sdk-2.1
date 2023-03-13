@@ -3,6 +3,7 @@ from . import initializer
 from . import blue_print
 from . import bulk_read
 from . import bulk_write
+from . import cancelmeetings
 from . import contact_roles
 from . import currencies
 from . import custom_views
